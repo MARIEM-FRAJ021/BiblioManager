@@ -16,6 +16,7 @@ namespace BiblioManager.API.DAL
         public DbSet<Emprunt> Emprunts { get; set; }
 
         public DbSet<Paiement> Paiements { get; set; }
+        public DbSet<Categorie> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
