@@ -1,4 +1,6 @@
 using BiblioManager.API.DAL;
+using BiblioManager.API.Interfaces;
+using BiblioManager.API.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<ICategorieRepository, CategorieRepository>();
+builder.Services.AddScoped<ILivreRepository, LivreRepository>();
+builder.Services.AddScoped<IAuteurRepository, AuteurRepository>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BiblothequeDbContext>(options =>
     options.UseSqlServer(connectionString));
