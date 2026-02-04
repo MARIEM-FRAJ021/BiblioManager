@@ -22,5 +22,13 @@ namespace BiblioManager.API.Mappers
                 Libelle = categ.Libelle,
             };
         }
+
+        public static Categorie ToCategorieFromUpdateCategorieDto(this UpdateCategorieDto categ)
+        {
+            return new Categorie
+            {
+                Libelle = categ.Libelle,
+            };
+        }
     }
 }

@@ -7,5 +7,7 @@ namespace BiblioManager.API.Interfaces
         Task<IEnumerable<Categorie>> GetAllAsync();
         Task<Categorie?> GetByIdAsync(int id);
         Task<Categorie> CreateAsync(Categorie categorie);
+        Task<Categorie?> UpdateAsync(int id, Categorie categorie);
+        Task<bool> DeleteAsync(int id);
     }
 }

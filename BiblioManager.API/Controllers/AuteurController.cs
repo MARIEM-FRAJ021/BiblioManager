@@ -47,5 +47,38 @@ namespace BiblioManager.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = auteur.IdAuteur }, auteur);
         }
 
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update([FromBody] UpdateAuteurDto updateAuteurDto, [FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var auteurModel = updateAuteurDto.ToAuteurFromUpdateAuteurDto();
+            var auteur = await _repo.UpdateAsync(id, auteurModel);
+            if (auteur == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(auteur);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            try
+            {
+                var auteurDeleted = await _repo.DeleteAsync(id);
+                if (!auteurDeleted)
+                {
+                    return NotFound();
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
+
+        }
     }
 }

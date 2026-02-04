@@ -24,5 +24,14 @@ namespace BiblioManager.API.Mappers
                 Prenom = auteur.Prenom,
             };
         }
+
+        public static Auteur ToAuteurFromUpdateAuteurDto(this UpdateAuteurDto auteur)
+        {
+            return new Auteur
+            {
+                Nom = auteur.Nom,
+                Prenom = auteur.Prenom,
+            };
+        }
     }
 }

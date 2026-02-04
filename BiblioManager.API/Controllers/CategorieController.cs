@@ -1,4 +1,5 @@
-﻿using BiblioManager.API.Dtos.Categorie;
+﻿using BiblioManager.API.Dtos.Auteur;
+using BiblioManager.API.Dtos.Categorie;
 using BiblioManager.API.Dtos.Livre;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
@@ -45,6 +46,38 @@ namespace BiblioManager.API.Controllers
             var categModel = createCategorieDto.ToCategorieFromCreateCategorieDto();
             var categ = await _repo.CreateAsync(categModel);
             return CreatedAtAction(nameof(GetById), new { id = categ.Id }, categ);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCategorieDto updateCategorieDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var categModel = updateCategorieDto.ToCategorieFromUpdateCategorieDto();
+            var categ = await _repo.UpdateAsync(id, categModel);
+            if (categ == null)
+            {
+                return NotFound();
+            }
+            return Ok(categ);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            try
+            {
+                var categDeleted = await _repo.DeleteAsync(id);
+                if (!categDeleted)
+                {
+                    return NotFound();
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
     }
