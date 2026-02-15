@@ -8,6 +8,8 @@ namespace BiblioManager.API.Interfaces
         Task<IEnumerable<Livre>> GetAllAsync();
         Task<Livre?> GetByIdAsync(int id);
         Task<Livre> CreateAsync(Livre livre);
-        
+        Task<Livre> UpdateAsync(int id,Livre livre);
+        Task<bool> DeleteAsync(int id);
+
     }
 }

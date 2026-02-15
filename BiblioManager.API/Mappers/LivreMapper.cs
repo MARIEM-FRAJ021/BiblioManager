@@ -31,5 +31,17 @@ namespace BiblioManager.API.Mappers
                 IdCategorie = createLivreDto.IdCategorie
             };
         }
+
+        public static Livre ToLivreFromUpdateLivreDto(this UpdateLivreDto updateLivreDto)
+        {
+            return new Livre
+            {
+                Titre = updateLivreDto.Titre,
+                ISBN = updateLivreDto.ISBN,
+                QuantiteTotale = updateLivreDto.QuantiteTotale,
+                AuteurId = updateLivreDto.AuteurId,
+                IdCategorie = updateLivreDto.IdCategorie
+            };
+        }
     }
 }

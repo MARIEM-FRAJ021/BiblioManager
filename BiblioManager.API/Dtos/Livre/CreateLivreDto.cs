@@ -14,9 +14,7 @@ namespace BiblioManager.API.Dtos.Livre
         [Required]
         [Range(0, int.MaxValue)]
         public int QuantiteTotale { get; set; }
-        [Required]
-        [Range(0, int.MaxValue)]
-        public int QuantiteDisponible { get; set; }
+        public int QuantiteDisponible => QuantiteTotale;
         [Required]
         public int AuteurId { get; set; }
         [Required]
