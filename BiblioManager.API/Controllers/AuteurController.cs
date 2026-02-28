@@ -29,8 +29,6 @@ namespace BiblioManager.API.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             var auteur = await _repo.GetByIdAsync(id);
             if (auteur == null)
                 return NotFound();

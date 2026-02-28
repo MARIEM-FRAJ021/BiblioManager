@@ -14,6 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICategorieRepository, CategorieRepository>();
 builder.Services.AddScoped<ILivreRepository, LivreRepository>();
 builder.Services.AddScoped<IAuteurRepository, AuteurRepository>();
+builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BiblothequeDbContext>(options =>
     options.UseSqlServer(connectionString));

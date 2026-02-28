@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BiblioManager.API.Models
 {
@@ -17,6 +18,7 @@ namespace BiblioManager.API.Models
         [EmailAddress]
         public string Email { get; set; }
         public bool Actif { get; set; } = true;
+        public decimal Penalite { get; set; } = 0;
 
         //Relation avec Emprunt
         public ICollection<Emprunt> Emprunts { get; set; }
@@ -27,6 +29,7 @@ namespace BiblioManager.API.Models
 
         [ForeignKey("Utilisateur")]
         public int IdUtilisateur { get; set; }
+        [JsonIgnore]
         public Utilisateur Utilisateur { get; set; }
 
     }
