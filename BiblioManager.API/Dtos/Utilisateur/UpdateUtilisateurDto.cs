@@ -18,6 +18,6 @@ namespace BiblioManager.API.Dtos.Utilisateur
         public string MotDePasse { get; set; }
         [Required]
         public RoleUtilisateurEnum RoleUtilisateur { get; set; }
-        public DateTime DateCreation { get; set; } = DateTime.Now;
+        //public DateTime DateCreation { get; set; } = DateTime.Now;
     }
 }

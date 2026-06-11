@@ -96,14 +96,22 @@ namespace BiblioManager.API.DAL
         private void ConfigPaiement(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Paiement>()
-            .HasOne(p => p.Adherent)
+            .HasOne(p => p.Utilisateur)
             .WithMany(a => a.Paiements)
-            .HasForeignKey(p => p.IdAdherent)
+            .HasForeignKey(p => p.IdUtilisateur)
             .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Paiement>()
                 .Property(p => p.Montant)
                 .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<Paiement>()
+                .HasIndex(p => p.StripeSessionId)
+                .IsUnique();
+
+            modelBuilder.Entity<Paiement>()
+                .HasIndex(p => p.Reference)
+                .IsUnique();
         }
     }
 }

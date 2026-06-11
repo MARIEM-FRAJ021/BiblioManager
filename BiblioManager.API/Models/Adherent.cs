@@ -8,24 +8,16 @@ namespace BiblioManager.API.Models
     {
         [Key]
         public int IdAdherent { get; set; }
-        [Required]
-        [MaxLength(50)]
         public string Prenom {  get; set; }
-        [Required]
-        [MaxLength(50)]
         public string Nom { get; set; }
-        [Required]
-        [EmailAddress]
         public string Email { get; set; }
-        public bool Actif { get; set; } = true;
-        public decimal Penalite { get; set; } = 0;
+        public bool Actif { get; set; } 
+        public DateTime DateDebut { get; set; }
+        public DateTime DateFin { get; set; }
+        public decimal Penalite { get; set; }
 
         //Relation avec Emprunt
         public ICollection<Emprunt> Emprunts { get; set; }
-        /// <summary>
-        /// Relation avec Paiements
-        /// </summary>
-        public ICollection<Paiement> Paiements { get; set; }
 
         [ForeignKey("Utilisateur")]
         public int IdUtilisateur { get; set; }

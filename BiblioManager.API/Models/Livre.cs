@@ -7,16 +7,9 @@ namespace BiblioManager.API.Models
     {
         [Key]
         public int IdLivre { get; set; }
-        [Required]
-        [MaxLength(200)]
         public string Titre { get; set; }
-        [MaxLength(20)]
         public string ISBN { get; set; }
-        [Required]
-        [Range(0, int.MaxValue)]
         public int QuantiteTotale { get; set; }
-        [Required]
-        [Range(0, int.MaxValue)]
         public int QuantiteDisponible { get; set; }
         /// <summary>
         /// One-to-many
