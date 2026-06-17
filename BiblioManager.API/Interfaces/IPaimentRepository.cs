@@ -6,5 +6,10 @@ namespace BiblioManager.API.Interfaces
     {
         Task<IEnumerable<Paiement>> GetPaiementsUtilisateur(int idUtilisateur);
         Task<Paiement?> GetById(int id);
+        Task<Paiement?> GetDernierPaiementValide(int idUtilisateur);
+        Task<Paiement?> GetPaiementToTreat(string stripeSessionId);
+        Task AddAsync(Paiement paiement);
+        Task SaveChangesAsync();
+
     }
 }

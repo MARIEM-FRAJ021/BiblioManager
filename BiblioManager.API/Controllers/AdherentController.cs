@@ -1,6 +1,8 @@
 ﻿using BiblioManager.API.Dtos;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
+using BiblioManager.API.Models;
+using BiblioManager.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
@@ -26,13 +28,6 @@ namespace BiblioManager.API.Controllers
             return Ok("Utilisateur est maintenant Adhérent");
 
         }
-        [HttpGet("adhrent-actif")]
-        public async Task<IActionResult> AdherentActif(int id)
-        {
-            var isActif = await _service.AdherentEstActif(id);
-            return Ok(isActif);
-        }
-
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetAdherentById(int id)
         {
@@ -56,11 +51,15 @@ namespace BiblioManager.API.Controllers
             var adherents = await _repo.GetAdherentActifs();
             return Ok(adherents);
         }
-        [HttpGet("{id}/est-actif")]
-        public async Task<IActionResult> AdherentEstActif(int id)
+        [HttpGet("{idAdherent}/verifier")]
+        public async Task<IActionResult> VerifierAdherent(int idAdherent)
         {
-            var estActif = await _service.AdherentEstActif(id);
-            return Ok(estActif);
+            await _service.VerifierAdherentActif(idAdherent);
+
+            return Ok(new
+            {
+                Message = "Adhérent actif."
+            });
         }
         [HttpPut("desactiver/{id}")]
         public async Task<IActionResult> DesactiverAdhesion (int id)
@@ -82,14 +81,14 @@ namespace BiblioManager.API.Controllers
                 Message = "Adhérent mis à jour."
             });
         }
-        [HttpGet("utilisateur/{Userid}")]
-        public async Task<IActionResult> UserHasAdherent (int userId)
+        [HttpGet("utilisateur/{userId}")]
+        public async Task<IActionResult> UserIsAdherent(int userId)
         {
-            var existe = await _repo.UserHasAdherent(userId);
+            var existe = await _repo.UserIsAdherent(userId);
             return Ok(existe);
         }
         [HttpPut("renouveler/{id}")]
-        public async Task<IActionResult> RenouvelerAbonnement (int id)
+        public async Task<IActionResult> RenouvelerAbonnement(int id)
         {
             await _service.RenouvelerAbonnement(id);
             return Ok(new

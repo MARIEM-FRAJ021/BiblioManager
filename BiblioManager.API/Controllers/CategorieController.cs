@@ -63,20 +63,12 @@ namespace BiblioManager.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            try
+            var categDeleted = await _repo.DeleteAsync(id);
+            if (!categDeleted)
             {
-                var categDeleted = await _repo.DeleteAsync(id);
-                if (!categDeleted)
-                {
-                    return NotFound();
-                }
-                return NoContent();
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                return Conflict(ex.Message);
-            }
+            return NoContent();
         }
-
     }
 }

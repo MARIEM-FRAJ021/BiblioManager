@@ -25,4 +25,11 @@ namespace BiblioManager.API.Models
         public Utilisateur Utilisateur { get; set; }
 
     }
+    public enum StatutAdherentEnum
+    {
+        NonAdherent,
+        Expire,
+        Desactive,
+        Actif
+    }
 }

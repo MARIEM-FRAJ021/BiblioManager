@@ -7,19 +7,18 @@ namespace BiblioManager.API.Services
 {
     public class PaiementService : IPaiementService
     {
-        private readonly BiblothequeDbContext _context;
-        public PaiementService (BiblothequeDbContext context)
+        private readonly IPaimentRepository _paiementRepository;
+        private readonly IUtilisateurRepository _utilisateurRepository;
+        public PaiementService(BiblothequeDbContext context, IPaimentRepository paimentRepository, IUtilisateurRepository utilisateurRepository)
         {
-            _context = context;
+            _paiementRepository = paimentRepository;
+            _utilisateurRepository = utilisateurRepository;
         }
 
 
         public async Task TraiterPaiementCarte(string stripeSessionId, bool paiementReussi)
         {
-            var paiement = await _context.Paiements
-                .Include(p => p.Utilisateur)
-                .ThenInclude(u => u.Adherent)
-                .FirstOrDefaultAsync(p => p.StripeSessionId == stripeSessionId);
+            var paiement = await _paiementRepository.GetPaiementToTreat(stripeSessionId);
             if (paiement == null)
                 throw new Exception("Paiement introuvable");
             if (paiement.Statut != PaiementStatutEnum.EnAttente)
@@ -38,19 +37,18 @@ namespace BiblioManager.API.Services
             {
                 paiement.Statut = Models.PaiementStatutEnum.Refuse;
             }
-            await _context.SaveChangesAsync();
+            await _paiementRepository.SaveChangesAsync();
         }
         public async Task<Paiement> InitierPaiementCarte(Paiement createpaiement)
         {
-            var utilisateur = await _context.Utilisateurs.Include(u => u.Adherent)
-             .FirstOrDefaultAsync(a => a.IdUtilisateur == createpaiement.IdUtilisateur);
+            var utilisateur = await _utilisateurRepository.GetByIdAsync(createpaiement.IdUtilisateur);
             if (utilisateur == null)
                 throw new Exception("utilisateur introuvable.");
-            if (utilisateur.Adherent?.Actif == true && createpaiement.Type == TypePaiement.Abonnement)
+            if (utilisateur.Adherent?.DateFin >= DateTime.Now && createpaiement.Type == TypePaiement.Abonnement)
                 throw new Exception("Adhérent actif.");
             if (createpaiement.Type == TypePaiement.Penalite && utilisateur.Adherent == null)
                 throw new InvalidOperationException("Utilisateur non adhérent. Pénalité impossible.");
-            if (utilisateur.Adherent?.Penalite <= 0)
+            if (utilisateur.Adherent?.Penalite <= 0 && createpaiement.Type == TypePaiement.Penalite)
                 throw new InvalidOperationException("Aucune pénalité à régler.");
             var paiement = new Paiement
             {
@@ -63,8 +61,8 @@ namespace BiblioManager.API.Services
                 Reference = Guid.NewGuid().ToString(),
                 Type = createpaiement.Type
             };
-            await _context.Paiements.AddAsync(paiement);
-            await _context.SaveChangesAsync();
+            await _paiementRepository.AddAsync(paiement);
+            await _paiementRepository.SaveChangesAsync();
             return paiement;
         }
     }

@@ -45,19 +45,12 @@ namespace BiblioManager.API.Controllers
         [HttpPut]
         public async Task<IActionResult> TraiterPaiementCarte([FromBody] StripeWebhookDto stripeWebhookDto)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-                bool paiementReussi = stripeWebhookDto.Status.Equals("paid");
-                await _paiementService.TraiterPaiementCarte(
-                    stripeWebhookDto.StripeSessionId, paiementReussi);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            bool paiementReussi = stripeWebhookDto.Status.Equals("paid");
+            await _paiementService.TraiterPaiementCarte(
+                stripeWebhookDto.StripeSessionId, paiementReussi);
+            return Ok();
         }
     }
 }

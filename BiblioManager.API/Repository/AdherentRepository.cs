@@ -25,7 +25,7 @@ namespace BiblioManager.API.Repository
             return await _context.Adherents.ToListAsync();
         }
 
-        public async Task<bool> UserHasAdherent(int idUtilisateur)
+        public async Task<bool> UserIsAdherent(int idUtilisateur)
         {
             var userExists = await _context.Adherents.AnyAsync(x => x.IdUtilisateur == idUtilisateur);
             if (!userExists)
@@ -35,7 +35,7 @@ namespace BiblioManager.API.Repository
 
         public async Task<IEnumerable<Adherent>> GetAdherentActifs()
         {
-            return await _context.Adherents.Where(a => a.Actif == true && a.DateFin >= DateTime.Now).ToListAsync();
+            return await _context.Adherents.Where(a => a.DateFin >= DateTime.Now).ToListAsync();
         }
 
         public async Task UpdateAdherent(int id, Adherent adherentUpdateModel)
@@ -47,6 +47,25 @@ namespace BiblioManager.API.Repository
             existingAdherent.Prenom = adherentUpdateModel.Prenom;
             existingAdherent.Email = adherentUpdateModel.Email;
             await _context.SaveChangesAsync();
+        }
+        public async Task<StatutAdherentEnum> GetStatutAdherent(int idAdherent)
+        {
+            var adherent = await _context.Adherents.FirstOrDefaultAsync(x => x.IdAdherent == idAdherent);
+            if (adherent == null)
+                return StatutAdherentEnum.NonAdherent;
+            if (adherent?.DateFin < DateTime.Now)
+                return StatutAdherentEnum.Expire;
+            if (adherent?.DateFin >= DateTime.Now && adherent.Actif == false)
+                return StatutAdherentEnum.Desactive;
+            return StatutAdherentEnum.Actif;
+        }
+        public async Task AddAsync(Adherent adherent)
+        {
+            await _context.Adherents.AddAsync(adherent);
+        }
+        public async Task SaveChangesAsync()
+        {
+           await _context.SaveChangesAsync();
         }
     }
 }

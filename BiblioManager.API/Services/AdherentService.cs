@@ -1,33 +1,48 @@
 ﻿using BiblioManager.API.DAL;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
+using BiblioManager.API.Repository;
+using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.EntityFrameworkCore;
 
 namespace BiblioManager.API.Services
 {
     public class AdherentService : IAdherentService
     {
-        private readonly BiblothequeDbContext _context;
+        private readonly IAdherentRepository _adherentRepository;
+        private readonly IUtilisateurRepository _utilisateurRepository;
+        private readonly IPaimentRepository _paiementRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AdherentService(BiblothequeDbContext context)
+        public AdherentService(IAdherentRepository adherentRepository, IUtilisateurRepository utilisateurRepository, IPaimentRepository paiementRepository, IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _adherentRepository = adherentRepository;
+            _utilisateurRepository = utilisateurRepository;
+            _paiementRepository = paiementRepository;
+            _unitOfWork = unitOfWork;
         }
         public async Task DevenirAdherent(int utilisateurId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var data = await _context.Utilisateurs
-               .Where(u => u.IdUtilisateur == utilisateurId)
-               .Select(
-               u => new
-               {
-                   Utilisateur = u,
-                   EstAdherent = _context.Adherents.Any(a => a.IdUtilisateur == utilisateurId),
-                   PaiementValide = _context.Paiements.Where(p => p.IdUtilisateur == utilisateurId && p.Statut == PaiementStatutEnum.Valide && p.Type == TypePaiement.Abonnement).OrderByDescending(p => p.DatePaiement).FirstOrDefault()
-               }
-               ).FirstOrDefaultAsync();
+                var utilisateur = await _utilisateurRepository.GetByIdAsync(utilisateurId);
+
+                if (utilisateur == null)
+                    throw new KeyNotFoundException("Utilisateur introuvable.");
+
+                var estAdherent =
+                    await _adherentRepository.UserIsAdherent(utilisateurId);
+
+                var paiementValide =
+                    await _paiementRepository.GetDernierPaiementValide(utilisateurId);
+
+                var data = new
+                {
+                    Utilisateur = utilisateur,
+                    EstAdherent = estAdherent,
+                    PaiementValide = paiementValide
+                };
                 if (data == null)
                     throw new Exception("Utilisateur introuvable");
                 if (data.EstAdherent)
@@ -49,10 +64,11 @@ namespace BiblioManager.API.Services
                     Penalite = 0
                 };
 
-                _context.Adherents.Add(adherent);
+                await _adherentRepository.AddAsync(adherent);
+
                 data.PaiementValide.Statut = PaiementStatutEnum.Consomme;
 
-                await _context.SaveChangesAsync();
+                await _adherentRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
@@ -61,27 +77,42 @@ namespace BiblioManager.API.Services
                 throw;
             }
         }
-        public async Task<bool> AdherentEstActif(int idAdherent)
+        public async Task VerifierAdherentActif(int idAdherent)
         {
-            var adherent = await _context.Adherents.FirstOrDefaultAsync(a => a.IdAdherent == idAdherent);
-            if (adherent == null)
-                return false;
-            return adherent.Actif && adherent.DateFin >= DateTime.Now;
+            var statut = await _adherentRepository.GetStatutAdherent(idAdherent);
+
+            switch (statut)
+            {
+                case StatutAdherentEnum.NonAdherent:
+                    throw new InvalidOperationException("Utilisateur non adhérent.");
+
+                case StatutAdherentEnum.Expire:
+                    throw new InvalidOperationException("Adhésion expirée.");
+
+                case StatutAdherentEnum.Desactive:
+                    throw new InvalidOperationException("Adhésion désactivée.");
+
+                case StatutAdherentEnum.Actif:
+                    return;
+            }
         }
         public async Task RenouvelerAbonnement(int idAdherent)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var adherent = await _context.Adherents.FirstOrDefaultAsync(a => a.IdAdherent == idAdherent)
+                var adherent = await _adherentRepository.GetAdherentById(idAdherent)
                               ?? throw new KeyNotFoundException();
-                var paiement = await _context.Paiements.Where(p => p.Statut == PaiementStatutEnum.Valide && p.Type == TypePaiement.Abonnement && p.IdUtilisateur == adherent.IdUtilisateur).OrderByDescending(p => p.DatePaiement).FirstOrDefaultAsync()
+                bool adherentIsActive = adherent.Actif;
+                if (adherentIsActive)
+                    throw new InvalidOperationException("L'adhésion est déjà active.");
+                var paiement = await _paiementRepository.GetDernierPaiementValide(adherent.IdUtilisateur)
                 ?? throw new InvalidOperationException("Aucun paiement pour cet adhérent.");
                 adherent.DateDebut = DateTime.Now;
                 adherent.DateFin = DateTime.Now.AddYears(1);
                 adherent.Actif = true;
                 paiement.Statut = PaiementStatutEnum.Consomme;
-                await _context.SaveChangesAsync();
+                await _adherentRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
@@ -92,12 +123,17 @@ namespace BiblioManager.API.Services
         }
         public async Task<bool> DesactiverAdhesion(int idAdherent)
         {
-            var adherent = await _context.Adherents.FirstOrDefaultAsync(a => a.IdAdherent == idAdherent) ?? throw new KeyNotFoundException();
-            if (adherent.DateFin < DateTime.Now)
-                adherent.Actif = false;
+            var adherent = await _adherentRepository.GetAdherentById(idAdherent)
+                ?? throw new KeyNotFoundException("Adhérent introuvable.");
 
-            await _context.SaveChangesAsync();
-            return adherent.Actif;
+            if (!adherent.Actif)
+                return false;
+
+            adherent.Actif = false;
+
+            await _adherentRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

@@ -1,5 +1,6 @@
 using BiblioManager.API.DAL;
 using BiblioManager.API.Interfaces;
+using BiblioManager.API.Middlewares;
 using BiblioManager.API.Repository;
 using BiblioManager.API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,8 @@ builder.Services.AddScoped<IAuteurRepository, AuteurRepository>();
 builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
 builder.Services.AddScoped<IAdherentRepository, AdherentRepository>();
 builder.Services.AddScoped<IPaimentRepository, PaiementRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWorkRepository>();
+
 
 //Services
 builder.Services.AddScoped<IAdherentService, AdherentService>();
@@ -34,7 +37,16 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<BiblothequeDbContext>();
     SeedData.Initialize(context);
+    var adherentsExpires = context.Adherents
+                           .Where(a => a.DateFin < DateTime.Now && a.Actif)
+                           .ToList();
+    foreach (var a in adherentsExpires)
+    {
+        a.Actif = false;
+    }
+    context.SaveChanges();
 }
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -46,7 +58,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
+
