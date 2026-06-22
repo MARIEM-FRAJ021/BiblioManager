@@ -57,6 +57,8 @@ namespace BiblioManager.API.Repository
                 return StatutAdherentEnum.Expire;
             if (adherent?.DateFin >= DateTime.Now && adherent.Actif == false)
                 return StatutAdherentEnum.Desactive;
+            if (adherent?.Penalite > 0)
+                return StatutAdherentEnum.PenaliteNonReglee;
             return StatutAdherentEnum.Actif;
         }
         public async Task AddAsync(Adherent adherent)

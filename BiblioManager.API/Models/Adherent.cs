@@ -30,6 +30,7 @@ namespace BiblioManager.API.Models
         NonAdherent,
         Expire,
         Desactive,
+        PenaliteNonReglee,
         Actif
     }
 }

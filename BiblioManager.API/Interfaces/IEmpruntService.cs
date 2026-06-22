@@ -2,6 +2,7 @@
 {
     public interface IEmpruntService
     {
-        //Task Emprunter
+        Task EmprunterLivre(int idAdherent, int idLivre);
+        Task RetournerLivre(int idEmprunt);
     }
 }

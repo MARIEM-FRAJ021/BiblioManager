@@ -1,9 +1,5 @@
-﻿using BiblioManager.API.DAL;
-using BiblioManager.API.Interfaces;
+﻿using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
-using BiblioManager.API.Repository;
-using Castle.Components.DictionaryAdapter.Xml;
-using Microsoft.EntityFrameworkCore;
 
 namespace BiblioManager.API.Services
 {
@@ -91,9 +87,14 @@ namespace BiblioManager.API.Services
 
                 case StatutAdherentEnum.Desactive:
                     throw new InvalidOperationException("Adhésion désactivée.");
+                
+                case StatutAdherentEnum.PenaliteNonReglee:
+                    throw new InvalidOperationException("Pénalité non règlée.");
 
                 case StatutAdherentEnum.Actif:
                     return;
+                default:
+                    throw new InvalidOperationException("Statut inconnu.");
             }
         }
         public async Task RenouvelerAbonnement(int idAdherent)

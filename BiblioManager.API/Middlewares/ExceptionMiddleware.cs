@@ -27,6 +27,11 @@
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
                 }
+                else if (ex is KeyNotFoundException)
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
+                }
                 else
                 {
                     context.Response.StatusCode = 500;
