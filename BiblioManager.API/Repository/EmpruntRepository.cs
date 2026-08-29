@@ -2,7 +2,6 @@
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace BiblioManager.API.Repository
 {
@@ -24,12 +23,12 @@ namespace BiblioManager.API.Repository
             return await _context.Emprunts.ToListAsync();
         }
 
-        public async Task<Emprunt?> GetByIdAsync(int id)
+        public async Task<Emprunt?> GetByIdAsync(int idAdherent, int idEmprunt)
         {
             return await _context.Emprunts
                 .Include(e => e.Livre)
                 .Include(e => e.Adherent)
-                .FirstOrDefaultAsync(x => x.IdEmprunt == id);
+                .FirstOrDefaultAsync(x => x.IdEmprunt == idEmprunt  && x.IdAdherent == idAdherent);
         }
 
         public async Task<List<Emprunt>> GetEmpruntActifsByAdherents(int idAdherent)
@@ -51,7 +50,7 @@ namespace BiblioManager.API.Repository
         public async Task<List<Emprunt>> GetEmpruntsEnRetard()
         {
             return await _context.Emprunts
-                .Where(e => e.DateRetourEffective == null && e.DateRetourPrevue < DateTime.Now)
+                .Where(e => e.DateRetourEffective == null && e.DateRetourPrevue < DateTime.UtcNow)
                 .Include(e=>e.Adherent)
                 .Include(e=>e.Livre)
                 .ToListAsync();

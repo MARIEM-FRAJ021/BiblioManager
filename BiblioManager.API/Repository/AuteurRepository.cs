@@ -43,14 +43,14 @@ namespace BiblioManager.API.Repository
             return auteurModel;
         }
 
-        public async Task<bool> DeleteAsync (int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var auteurModel = await _context.Auteurs.Include(a=>a.Livres).FirstOrDefaultAsync(x => x.IdAuteur == id);
+            var auteurModel = await _context.Auteurs.Include(a => a.Livres).FirstOrDefaultAsync(x => x.IdAuteur == id);
 
             if (auteurModel != null)
             {
                 if (auteurModel.Livres.Any())
-                    throw new Exception("Impossible de supprimer cet auteur car il a des livres associés.");
+                    throw new InvalidOperationException("Impossible de supprimer cet auteur car il a des livres associés.");
                 _context.Auteurs.Remove(auteurModel);
                 await _context.SaveChangesAsync();
                 return true;

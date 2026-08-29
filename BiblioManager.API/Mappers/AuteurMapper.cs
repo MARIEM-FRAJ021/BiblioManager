@@ -1,5 +1,4 @@
 ﻿using BiblioManager.API.Dtos.Auteur;
-using BiblioManager.API.Dtos.Livre;
 using BiblioManager.API.Models;
 
 namespace BiblioManager.API.Mappers

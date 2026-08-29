@@ -1,12 +1,12 @@
 ﻿using BiblioManager.API.Dtos.Auteur;
-using BiblioManager.API.Dtos.Categorie;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BiblioManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AuteurController : ControllerBase
@@ -19,6 +19,7 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetAll()
         {
             var auteurs = await _repo.GetAllAsync();
@@ -27,6 +28,7 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetById(int id)
         {
             var auteur = await _repo.GetByIdAsync(id);
@@ -36,16 +38,18 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Create([FromBody] CreateAuteurDto createAuteurDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var auteurModel = createAuteurDto.ToAuteurFromCreateAuteurDto();
             var auteur = await _repo.CreateAsync(auteurModel);
-            return CreatedAtAction(nameof(GetById), new { id = auteur.IdAuteur }, auteur);
+            return CreatedAtAction(nameof(GetById), new { id = auteur.IdAuteur }, auteur.ToAuteurDto());
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Update([FromBody] UpdateAuteurDto updateAuteurDto, [FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -57,10 +61,11 @@ namespace BiblioManager.API.Controllers
                 return NotFound();
             }
 
-            return Ok(auteur);
+            return Ok(auteur.ToAuteurDto());
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var auteurDeleted = await _repo.DeleteAsync(id);

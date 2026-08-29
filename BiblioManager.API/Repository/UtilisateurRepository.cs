@@ -2,7 +2,6 @@
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.Xml;
 
 namespace BiblioManager.API.Repository
 {
@@ -19,22 +18,24 @@ namespace BiblioManager.API.Repository
         {
             return await _context.Utilisateurs.Include(u => u.Adherent).ToListAsync();
         }
-
         public async Task<Utilisateur?> GetByIdAsync(int id)
         {
             return await _context.Utilisateurs.Include(x => x.Adherent).FirstOrDefaultAsync(x => x.IdUtilisateur == id);
         }
-
+        public async Task<Utilisateur?> GetByEmailAsync(string email)
+        {
+            return await _context.Utilisateurs.Include(u=> u.Adherent).FirstOrDefaultAsync(u => u.Email == email);
+        }
         public async Task<Utilisateur> CreateAsync(Utilisateur user)
         {
             var users = _context.Utilisateurs;
-            var emailExiste = await users.AnyAsync(u=> u.Email == user.Email);
+            var emailExiste = await users.AnyAsync(u => u.Email == user.Email);
             if (emailExiste)
-                throw new Exception("Cet email existe déjà.");
+                throw new InvalidOperationException("Cet email existe déjà.");
             if (user.RoleUtilisateur is RoleUtilisateurEnum.Admin)
-                throw new Exception("Interdit");
+                throw new InvalidOperationException("Interdit");
             if (user.RoleUtilisateur is RoleUtilisateurEnum.Adherent)
-                throw new Exception("Interdit");
+                throw new InvalidOperationException("Interdit");
             await users.AddAsync(user);
             await _context.SaveChangesAsync();
             return user;
@@ -48,16 +49,11 @@ namespace BiblioManager.API.Repository
                 return null;
             var emailExiste = await users.AnyAsync(u => u.Email == user.Email);
             if (emailExiste)
-                throw new Exception("Cet email existe déjà.");
-            if (user.RoleUtilisateur is RoleUtilisateurEnum.Admin)
-                throw new Exception("Interdit");
-            if (user.RoleUtilisateur is RoleUtilisateurEnum.Adherent)
-                throw new Exception("Interdit");
+                throw new InvalidOperationException("Cet email existe déjà.");
             userModel.Nom = user.Nom;
             userModel.Prenom = user.Prenom;
             userModel.MotDePasse = user.MotDePasse;
             userModel.Email = user.Email;
-            userModel.RoleUtilisateur = user.RoleUtilisateur;
             await _context.SaveChangesAsync();
             return userModel;
         }
@@ -69,12 +65,16 @@ namespace BiblioManager.API.Repository
             if (utilisateurModel != null)
             {
                 if (utilisateurModel.RoleUtilisateur == RoleUtilisateurEnum.Admin || utilisateurModel.RoleUtilisateur == RoleUtilisateurEnum.Adherent)
-                    throw new Exception(" Interdit de supprimer un adhérent / admin");
+                    throw new InvalidOperationException(" Interdit de supprimer un adhérent / admin");
                 _context.Utilisateurs.Remove(utilisateurModel);
                 await _context.SaveChangesAsync();
                 return true;
             }
             return false;
+        }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

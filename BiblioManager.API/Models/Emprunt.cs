@@ -12,13 +12,13 @@ namespace BiblioManager.API.Models
         /// </summary>
         [ForeignKey("Adherent")]
         public int IdAdherent { get; set; }
-        public Adherent Adherent { get; set; }
+        public Adherent? Adherent { get; set; }
         /// <summary>
         /// Relation Livre
         /// </summary>
         [ForeignKey("Livre")]
         public int IdLivre { get; set; }
-        public Livre Livre { get; set; }
+        public Livre? Livre { get; set; }
         public DateTime DateEmprunt { get; set; }
         public DateTime DateRetourPrevue { get; set; }
         public DateTime? DateRetourEffective { get; set; }

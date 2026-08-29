@@ -1,6 +1,4 @@
-﻿using BiblioManager.API.Models;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BiblioManager.API.Dtos.Livre
 {
@@ -8,9 +6,9 @@ namespace BiblioManager.API.Dtos.Livre
     {
         [Required]
         [MaxLength(200)]
-        public string Titre { get; set; }
+        public string Titre { get; set; } = string.Empty;
         [MaxLength(20)]
-        public string ISBN { get; set; }
+        public string ISBN { get; set; } = string.Empty;
         [Required]
         [Range(0, int.MaxValue)]
         public int QuantiteTotale { get; set; }

@@ -6,7 +6,7 @@ namespace BiblioManager.API.Interfaces
     {
         Task<IEnumerable<Emprunt>> GetAllAsync();
         Task AjouterAsync(Emprunt emprunt);
-        Task<Emprunt?> GetByIdAsync(int id);
+        Task<Emprunt?> GetByIdAsync(int idAdherent,int idEmprunt);
         Task<List<Emprunt>> GetEmpruntActifsByAdherents(int idAdherent);
         Task<List<Emprunt>> GetEmpruntsEnRetard();
         Task<List<Emprunt>> GetHistoriqueByAdherent(int idAdherent);

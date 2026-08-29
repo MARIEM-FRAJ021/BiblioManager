@@ -35,15 +35,15 @@ namespace BiblioManager.API.Repository
             return livreModel;
         }
 
-        public async Task<Livre> UpdateAsync(int id, Livre livreUpdateModel)
+        public async Task<Livre?> UpdateAsync(int id, Livre livreUpdateModel)
         {
             var livreModel = await _context.Livres.Include(l => l.Emprunts).FirstOrDefaultAsync(x => x.IdLivre == id);
             if (livreModel == null)
                 return null;
             livreModel.Titre = livreUpdateModel.Titre;
             livreModel.ISBN = livreUpdateModel.ISBN;
-            livreModel.QuantiteTotale = livreUpdateModel.QuantiteTotale < livreModel.Emprunts.Count() ? throw new Exception("La quantité totale doit être supérieure ou égale aux emprunts") : livreUpdateModel.QuantiteTotale;
-            livreModel.QuantiteDisponible = livreModel.QuantiteTotale - livreModel.Emprunts.Count(e => e.DateRetourEffective > DateTime.Now);
+            livreModel.QuantiteTotale = livreUpdateModel.QuantiteTotale < livreModel.Emprunts.Count() ? throw new InvalidOperationException("La quantité totale doit être supérieure ou égale aux emprunts") : livreUpdateModel.QuantiteTotale;
+            livreModel.QuantiteDisponible = livreModel.QuantiteTotale - livreModel.Emprunts.Count(e => e.DateRetourEffective > DateTime.UtcNow);
             livreModel.AuteurId = livreUpdateModel.AuteurId;
             await _context.SaveChangesAsync();
             return livreModel;
@@ -56,7 +56,7 @@ namespace BiblioManager.API.Repository
             {
                 if (livreModel.Emprunts.Any())
                 {
-                    throw new Exception("Vous ne pouvez pas supprimer un livre ayant des emprunts.");
+                    throw new InvalidOperationException("Vous ne pouvez pas supprimer un livre ayant des emprunts.");
                 }
                 _context.Livres.Remove(livreModel);
                 await _context.SaveChangesAsync();

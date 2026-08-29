@@ -2,7 +2,6 @@
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace BiblioManager.API.Repository
 {
@@ -35,27 +34,28 @@ namespace BiblioManager.API.Repository
 
         public async Task<IEnumerable<Adherent>> GetAdherentActifs()
         {
-            return await _context.Adherents.Where(a => a.DateFin >= DateTime.Now).ToListAsync();
+            return await _context.Adherents.Where(a => a.DateFin >= DateTime.UtcNow).ToListAsync();
         }
 
-        public async Task UpdateAdherent(int id, Adherent adherentUpdateModel)
+        public async Task<Adherent> UpdateAdherent(int id, Adherent adherentUpdateModel)
         {
             var existingAdherent = await _context.Adherents.FirstOrDefaultAsync(a => a.IdAdherent == id);
             if (existingAdherent == null)
-                throw new Exception("Adherent introuvable");
+                throw new KeyNotFoundException("Adherent introuvable");
             existingAdherent.Nom = adherentUpdateModel.Nom;
             existingAdherent.Prenom = adherentUpdateModel.Prenom;
             existingAdherent.Email = adherentUpdateModel.Email;
             await _context.SaveChangesAsync();
+            return adherentUpdateModel;
         }
         public async Task<StatutAdherentEnum> GetStatutAdherent(int idAdherent)
         {
             var adherent = await _context.Adherents.FirstOrDefaultAsync(x => x.IdAdherent == idAdherent);
             if (adherent == null)
                 return StatutAdherentEnum.NonAdherent;
-            if (adherent?.DateFin < DateTime.Now)
+            if (adherent?.DateFin < DateTime.UtcNow)
                 return StatutAdherentEnum.Expire;
-            if (adherent?.DateFin >= DateTime.Now && adherent.Actif == false)
+            if (adherent?.DateFin >= DateTime.UtcNow && adherent.Actif == false)
                 return StatutAdherentEnum.Desactive;
             if (adherent?.Penalite > 0)
                 return StatutAdherentEnum.PenaliteNonReglee;

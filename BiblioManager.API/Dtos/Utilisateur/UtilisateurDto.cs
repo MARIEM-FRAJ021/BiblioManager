@@ -1,18 +1,16 @@
 ﻿using BiblioManager.API.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace BiblioManager.API.Dtos.Utilisateur
 {
     public class UtilisateurDto
     {
         public int IdUtilisateur { get; set; }
-        public string Nom { get; set; }
-        public string Prenom { get; set; }
-        public string Email { get; set; }
-        public string MotDePasse { get; set; }
+        public string Nom { get; set; } = string.Empty;
+        public string Prenom { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public RoleUtilisateurEnum RoleUtilisateur { get; set; }
-        public DateTime DateCreation { get; set; } = DateTime.Now;
-        public Adherent Adherent { get; set; }
+        public DateTime DateCreation { get; set; } = DateTime.UtcNow;
+        public AdherentDto? Adherent { get; set; }
     }
 }
 

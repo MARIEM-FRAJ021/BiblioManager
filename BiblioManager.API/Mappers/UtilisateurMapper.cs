@@ -13,10 +13,9 @@ namespace BiblioManager.API.Mappers
                 Nom = utilisateur.Nom,
                 Prenom = utilisateur.Prenom,
                 Email = utilisateur.Email,
-                MotDePasse = utilisateur.MotDePasse,
                 RoleUtilisateur = utilisateur.RoleUtilisateur,
                 DateCreation = utilisateur.DateCreation,
-                Adherent = utilisateur.Adherent
+                Adherent = utilisateur.Adherent?.ToAdherentDto(),
             };
         }
 
@@ -28,7 +27,7 @@ namespace BiblioManager.API.Mappers
                 Prenom = createUtilisateurDto.Prenom,
                 Email = createUtilisateurDto.Email,
                 MotDePasse = BCrypt.Net.BCrypt.HashPassword(createUtilisateurDto.MotDePasse),
-                RoleUtilisateur = createUtilisateurDto.RoleUtilisateur,
+                RoleUtilisateur = RoleUtilisateurEnum.Utilisateur,
                 DateCreation = DateTime.UtcNow.Date
             };
         }
@@ -41,7 +40,6 @@ namespace BiblioManager.API.Mappers
                 Prenom = updateUtilisateurDto.Prenom,
                 Email = updateUtilisateurDto.Email,
                 MotDePasse = BCrypt.Net.BCrypt.HashPassword(updateUtilisateurDto.MotDePasse),
-                RoleUtilisateur = updateUtilisateurDto.RoleUtilisateur,
                 DateCreation = DateTime.UtcNow.Date
             };
         }

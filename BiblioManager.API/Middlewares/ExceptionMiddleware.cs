@@ -22,7 +22,7 @@
                 _logger.LogError(ex, "Une erreur est survenue");
                 context.Response.ContentType = "application/json";
 
-                if(ex is InvalidOperationException)
+                if (ex is InvalidOperationException)
                 {
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
@@ -31,6 +31,12 @@
                 {
                     context.Response.StatusCode = 404;
                     await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
+                }
+                else if (ex is UnauthorizedAccessException)
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
+
                 }
                 else
                 {

@@ -2,8 +2,6 @@
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata;
 
 namespace BiblioManager.API.Repository
 {
@@ -36,7 +34,6 @@ namespace BiblioManager.API.Repository
         {
             return await _context.Paiements
                 .Include(p => p.Utilisateur)
-                .ThenInclude(u => u.Adherent)
                 .FirstOrDefaultAsync(p => p.StripeSessionId == stripeSessionId);
         }
 

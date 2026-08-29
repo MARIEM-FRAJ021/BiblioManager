@@ -10,6 +10,5 @@ namespace BiblioManager.API.Interfaces
         Task<Paiement?> GetPaiementToTreat(string stripeSessionId);
         Task AddAsync(Paiement paiement);
         Task SaveChangesAsync();
-
     }
 }

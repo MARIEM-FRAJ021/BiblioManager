@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
 
-        public string Libelle { get; set; }
+        public string Libelle { get; set; } = string.Empty;
 
-        public ICollection<Livre> Livres { get; set; }
+        public ICollection<Livre> Livres { get; set; } = new List<Livre>();
     }
 }

@@ -6,6 +6,6 @@ namespace BiblioManager.API.Dtos.Categorie
     {
         [Required]
         [MaxLength(100)]
-        public string Libelle { get; set; }
+        public string Libelle { get; set; } = string.Empty;
     }
 }

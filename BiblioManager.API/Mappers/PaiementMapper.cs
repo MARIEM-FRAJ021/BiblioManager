@@ -1,5 +1,4 @@
-﻿using BiblioManager.API.Dtos;
-using BiblioManager.API.Dtos.Paiement;
+﻿using BiblioManager.API.Dtos.Paiement;
 using BiblioManager.API.Models;
 
 namespace BiblioManager.API.Mappers
@@ -17,7 +16,8 @@ namespace BiblioManager.API.Mappers
                 Mode = paiement.Mode,
                 StripeSessionId = paiement.StripeSessionId,
                 Reference = paiement.Reference,
-                Type = paiement.Type
+                Type = paiement.Type,
+                Statut =paiement.Statut
             };
         }
 

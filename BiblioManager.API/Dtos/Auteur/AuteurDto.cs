@@ -1,7 +1,4 @@
-﻿using BiblioManager.API.Dtos.Livre;
-using System.ComponentModel.DataAnnotations;
-
-namespace BiblioManager.API.Dtos.Auteur
+﻿namespace BiblioManager.API.Dtos.Auteur
 {
     public class AuteurDto
     {

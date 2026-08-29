@@ -1,13 +1,12 @@
-﻿using BiblioManager.API.Dtos.Auteur;
-using BiblioManager.API.Dtos.Categorie;
-using BiblioManager.API.Dtos.Livre;
+﻿using BiblioManager.API.Dtos.Categorie;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BiblioManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategorieController : ControllerBase
@@ -20,6 +19,7 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetAll()
         {
             var categs = await _repo.GetAllAsync();
@@ -28,6 +28,7 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetById(int id)
         {
             var categ = await _repo.GetByIdAsync(id);
@@ -37,16 +38,18 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Create([FromBody] CreateCategorieDto createCategorieDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var categModel = createCategorieDto.ToCategorieFromCreateCategorieDto();
             var categ = await _repo.CreateAsync(categModel);
-            return CreatedAtAction(nameof(GetById), new { id = categ.Id }, categ);
+            return CreatedAtAction(nameof(GetById), new { id = categ.Id }, categ.ToCategorieDto());
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCategorieDto updateCategorieDto)
         {
             if (!ModelState.IsValid)
@@ -57,10 +60,11 @@ namespace BiblioManager.API.Controllers
             {
                 return NotFound();
             }
-            return Ok(categ);
+            return Ok(categ.ToCategorieDto());
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var categDeleted = await _repo.DeleteAsync(id);

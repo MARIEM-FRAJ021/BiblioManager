@@ -45,7 +45,7 @@ namespace BiblioManager.API.Repository
         {
             if(id==1)
             {
-                throw new Exception("Impossible de supprimer cette catégorie.");
+                throw new InvalidOperationException("Impossible de supprimer cette catégorie.");
             }
             var categorieModel = await _context.Categories.Include(c=>c.Livres).FirstOrDefaultAsync(x => x.Id == id);
 

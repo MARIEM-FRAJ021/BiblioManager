@@ -40,11 +40,11 @@ namespace BiblioManager.API.Services
                     PaiementValide = paiementValide
                 };
                 if (data == null)
-                    throw new Exception("Utilisateur introuvable");
+                    throw new KeyNotFoundException("Utilisateur introuvable");
                 if (data.EstAdherent)
-                    throw new Exception("Utilisateur est déjà adhérent");
+                    throw new InvalidOperationException("Utilisateur est déjà adhérent");
                 if (data.PaiementValide == null)
-                    throw new Exception("paiement requis");
+                    throw new InvalidOperationException("paiement requis");
 
                 data.Utilisateur.RoleUtilisateur = RoleUtilisateurEnum.Adherent;
 
@@ -55,8 +55,8 @@ namespace BiblioManager.API.Services
                     Prenom = data.Utilisateur.Prenom,
                     Email = data.Utilisateur.Email,
                     Actif = true,
-                    DateDebut = DateTime.Now,
-                    DateFin = DateTime.Now.AddYears(1),
+                    DateDebut = DateTime.UtcNow,
+                    DateFin = DateTime.UtcNow.AddYears(1),
                     Penalite = 0
                 };
 
@@ -109,8 +109,8 @@ namespace BiblioManager.API.Services
                     throw new InvalidOperationException("L'adhésion est déjà active.");
                 var paiement = await _paiementRepository.GetDernierPaiementValide(adherent.IdUtilisateur)
                 ?? throw new InvalidOperationException("Aucun paiement pour cet adhérent.");
-                adherent.DateDebut = DateTime.Now;
-                adherent.DateFin = DateTime.Now.AddYears(1);
+                adherent.DateDebut = DateTime.UtcNow;
+                adherent.DateFin = DateTime.UtcNow.AddYears(1);
                 adherent.Actif = true;
                 paiement.Statut = PaiementStatutEnum.Consomme;
                 await _adherentRepository.SaveChangesAsync();

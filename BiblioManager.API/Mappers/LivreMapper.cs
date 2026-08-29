@@ -14,8 +14,8 @@ namespace BiblioManager.API.Mappers
                 ISBN = livreModel.ISBN,
                 QuantiteTotale = livreModel.QuantiteTotale,
                 QuantiteDisponible = livreModel.QuantiteDisponible,
-                Auteur = livreModel.Auteur.ToAuteurDto(),
-                Categorie = livreModel.Categorie.ToCategorieDto()
+                Auteur = livreModel.Auteur?.ToAuteurDto(),
+                Categorie = livreModel.Categorie?.ToCategorieDto()
             };
         }
 

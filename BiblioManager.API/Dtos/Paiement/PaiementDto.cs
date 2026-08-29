@@ -1,7 +1,5 @@
 ﻿using BiblioManager.API.Models;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace BiblioManager.API.Dtos.Paiement
 {
@@ -11,15 +9,15 @@ namespace BiblioManager.API.Dtos.Paiement
         public int IdUtilisateur { get; set; }
         [Required]
         public decimal Montant { get; set; }
-        public DateTime DatePaiement { get; set; } = DateTime.Now;
+        public DateTime DatePaiement { get; set; } = DateTime.UtcNow;
         public ModePaiementEnum Mode { get; set; } = ModePaiementEnum.Carte;
         // Pour paiement carte Stripe
         [Required]
         [MaxLength(255)]
-        public string StripeSessionId { get; set; }
+        public string StripeSessionId { get; set; }= string.Empty;
         [Required]
         [MaxLength(100)]
-        public string Reference { get; set; }
+        public string Reference { get; set; }=string.Empty;
         public PaiementStatutEnum Statut { get; set; }
 
         public TypePaiement Type { get; set; } = TypePaiement.Abonnement;

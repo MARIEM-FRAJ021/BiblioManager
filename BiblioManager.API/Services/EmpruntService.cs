@@ -1,6 +1,5 @@
 ﻿using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
-using BiblioManager.API.Repository;
 
 namespace BiblioManager.API.Services
 {
@@ -28,8 +27,8 @@ namespace BiblioManager.API.Services
             {
                 IdAdherent = idAdherent,
                 IdLivre = idLivre,
-                DateEmprunt = DateTime.Now,
-                DateRetourPrevue = DateTime.Now.AddDays(14)
+                DateEmprunt = DateTime.UtcNow,
+                DateRetourPrevue = DateTime.UtcNow.AddDays(14)
 
             };
 
@@ -38,20 +37,20 @@ namespace BiblioManager.API.Services
             await _livreRepository.SaveChangesAsync();
         }
 
-        public async Task RetournerLivre(int idEmprunt)
+        public async Task RetournerLivre(int idAdherent,int idEmprunt)
         {
-            var emprunt = await _empruntRepository.GetByIdAsync(idEmprunt)
+            var emprunt = await _empruntRepository.GetByIdAsync(idAdherent,idEmprunt)
             ?? throw new KeyNotFoundException("Emprunt introuvable");
             if (emprunt.DateRetourEffective != null)
                 throw new InvalidOperationException("Livre déjà retourné");
-            emprunt.DateRetourEffective = DateTime.Now;
-            emprunt.Livre.QuantiteDisponible++;
+            emprunt.DateRetourEffective = DateTime.UtcNow;
+            emprunt.Livre!.QuantiteDisponible++;
             emprunt.Statut = StatutEmprunt.Retourne;
             if (emprunt.DateRetourEffective > emprunt.DateRetourPrevue)
             {
                 var joursRetard = (int)Math.Ceiling(
             (emprunt.DateRetourEffective.Value - emprunt.DateRetourPrevue).TotalDays);
-                emprunt.Adherent.Penalite += joursRetard;
+                emprunt.Adherent!.Penalite += joursRetard;
             }
 
             await _livreRepository.SaveChangesAsync();

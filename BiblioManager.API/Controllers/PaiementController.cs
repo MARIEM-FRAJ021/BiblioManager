@@ -1,10 +1,13 @@
 ﻿using BiblioManager.API.Dtos.Paiement;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BiblioManager.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PaiementController : ControllerBase
@@ -18,14 +21,29 @@ namespace BiblioManager.API.Controllers
             _paiementService = paiementService;
         }
         [HttpGet]
+        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetPaiementsUtilisateur(int idUtilisateur)
         {
+            if (User.IsInRole("Adherent"))
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+                var userId = int.Parse(userIdClaim.Value);
+                if (idUtilisateur != userId)
+                {
+                    return Forbid();
+                }
+            }
             var ListPaiements = await _paiementRepository.GetPaiementsUtilisateur(idUtilisateur);
             if (ListPaiements == null || !ListPaiements.Any())
                 return NotFound("Aucun paiement trouvé");
             return Ok(ListPaiements.Select(x => x.ToPaiementDto()).ToList());
         }
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> GetById(int id)
         {
             var paiement = await _paiementRepository.GetById(id);
@@ -36,6 +54,19 @@ namespace BiblioManager.API.Controllers
         [HttpPost]
         public async Task<IActionResult> InitierPaiementCarte([FromBody] CreatePaiementDto createPaiementDto)
         {
+            if (User.IsInRole("Utilisateur") || User.IsInRole("Adherent"))
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (userIdClaim == null)
+                    return Unauthorized();
+
+                if (!int.TryParse(userIdClaim.Value, out var userId))
+                    return Unauthorized();
+
+                if (createPaiementDto.IdUtilisateur != userId)
+                    return Forbid();
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var paiement = await _paiementService.InitierPaiementCarte(createPaiementDto.ToPaiementFromCreatePaiementDto());

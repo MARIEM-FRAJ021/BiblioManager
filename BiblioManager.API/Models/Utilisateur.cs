@@ -6,17 +6,17 @@ namespace BiblioManager.API.Models
     {
         [Key]
         public int IdUtilisateur { get; set; }
-        public string Nom { get; set; }
-        public string Prenom { get; set; }
-        public string Email { get; set; }
-        public string MotDePasse { get; set; }
+        public string Nom { get; set; } = string.Empty;
+        public string Prenom { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string MotDePasse { get; set; } = string.Empty;
         public RoleUtilisateurEnum RoleUtilisateur { get; set; }
-        public DateTime DateCreation { get; set; } = DateTime.Now;
-        public Adherent Adherent { get; set; }
+        public DateTime DateCreation { get; set; } = DateTime.UtcNow;
+        public Adherent? Adherent { get; set; }
         /// <summary>
         /// Relation avec Paiements
         /// </summary>
-        public ICollection<Paiement> Paiements { get; set; }
+        public ICollection<Paiement> Paiements { get; set; } = new List<Paiement>();
     }
 
     public enum RoleUtilisateurEnum

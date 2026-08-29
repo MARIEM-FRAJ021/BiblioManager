@@ -8,21 +8,21 @@ namespace BiblioManager.API.Models
     {
         [Key]
         public int IdAdherent { get; set; }
-        public string Prenom {  get; set; }
-        public string Nom { get; set; }
-        public string Email { get; set; }
+        public string Prenom { get; set; } = string.Empty;
+        public string Nom { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public bool Actif { get; set; } 
         public DateTime DateDebut { get; set; }
         public DateTime DateFin { get; set; }
         public decimal Penalite { get; set; }
 
         //Relation avec Emprunt
-        public ICollection<Emprunt> Emprunts { get; set; }
+        public ICollection<Emprunt> Emprunts { get; set; } = new List<Emprunt>();
 
         [ForeignKey("Utilisateur")]
         public int IdUtilisateur { get; set; }
         [JsonIgnore]
-        public Utilisateur Utilisateur { get; set; }
+        public Utilisateur? Utilisateur { get; set; }
 
     }
     public enum StatutAdherentEnum
