@@ -129,4 +129,4 @@ Les endpoints protégés utilisent l'authentification JWT et les autorisations b
 
 🚧 **En développement**
 
-De nouvelles fonctionnalités et améliorations sont ajoutées progressivement.
+De nouvelles fonctionnalités et améliorations seront ajoutées progressivement.
