@@ -17,6 +17,7 @@ namespace BiblioManager.API.DAL
 
         public DbSet<Paiement> Paiements { get; set; }
         public DbSet<Categorie> Categories { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +29,7 @@ namespace BiblioManager.API.DAL
             ConfigAuteur(modelBuilder);
             ConfigEmprunt(modelBuilder);
             ConfigPaiement(modelBuilder);
+            ConfigRefreshTokens(modelBuilder);
         }
 
 
@@ -112,6 +114,14 @@ namespace BiblioManager.API.DAL
             modelBuilder.Entity<Paiement>()
                 .HasIndex(p => p.Reference)
                 .IsUnique();
+        }
+        private void ConfigRefreshTokens(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(r => r.Utilisateur)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(e => e.IdUtilisateur)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

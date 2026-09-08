@@ -17,6 +17,7 @@ namespace BiblioManager.API.Models
         /// Relation avec Paiements
         /// </summary>
         public ICollection<Paiement> Paiements { get; set; } = new List<Paiement>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 
     public enum RoleUtilisateurEnum
