@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using System.ComponentModel.DataAnnotations;
 
 namespace BiblioManager.API.Models
 {
@@ -18,6 +19,7 @@ namespace BiblioManager.API.Models
         /// </summary>
         public ICollection<Paiement> Paiements { get; set; } = new List<Paiement>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
     }
 
     public enum RoleUtilisateurEnum

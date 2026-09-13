@@ -67,7 +67,7 @@ builder.Services.AddScoped<IPaimentRepository, PaiementRepository>();
 builder.Services.AddScoped<IEmpruntRepository, EmpruntRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWorkRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 //Services
 builder.Services.AddScoped<IAdherentService, AdherentService>();
@@ -77,6 +77,8 @@ builder.Services.AddScoped<IEmpruntService, EmpruntService>();
 builder.Services.AddScoped<IAuthsService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRefreshTokenService,  RefreshTokenService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IEmailService,EmailService>();
 
 //batch
 builder.Services.AddHostedService<MaintenanceBatchService>();

@@ -14,11 +14,12 @@ namespace BiblioManager.API.Controllers
     {
         private readonly IAuthsService _authService;
         private readonly IRefreshTokenService _refreshTokenService;
-        public AuthController(IAuthsService authService, IRefreshTokenService refreshTokenService)
+        private readonly IPasswordResetService _passwordResetService;
+        public AuthController(IAuthsService authService, IRefreshTokenService refreshTokenService, IPasswordResetService passwordResetService)
         {
             _authService = authService;
             _refreshTokenService = refreshTokenService;
-
+            _passwordResetService = passwordResetService;
         }
 
         /// <summary>
@@ -77,6 +78,36 @@ namespace BiblioManager.API.Controllers
             return Ok(new
             {
                 message = "Déconnexion réussie"
+            });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            await _passwordResetService.RequestPasswordResetAsync(request.Email);
+            return Ok(new
+            {
+                message = "Si un compte associé à cette adresse existe, " +
+            "un email de réinitialisation a été envoyé."
+            });
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            await _passwordResetService
+                .ResetPasswordAsync(
+                    request.Token,
+                    request.NewPassword);
+
+            return Ok(new
+            {
+                message = "Mot de passe réinitialisé avec succès."
             });
         }
     }

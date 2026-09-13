@@ -18,6 +18,7 @@ namespace BiblioManager.API.DAL
         public DbSet<Paiement> Paiements { get; set; }
         public DbSet<Categorie> Categories { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +31,7 @@ namespace BiblioManager.API.DAL
             ConfigEmprunt(modelBuilder);
             ConfigPaiement(modelBuilder);
             ConfigRefreshTokens(modelBuilder);
+            ConfigPasswordResetToken(modelBuilder);
         }
 
 
@@ -122,6 +124,15 @@ namespace BiblioManager.API.DAL
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(e => e.IdUtilisateur)
                 .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        private void ConfigPasswordResetToken (ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PasswordResetToken>()
+                .HasOne(p=> p.Utilisateur)
+                .WithMany(u=>u.PasswordResetTokens)
+                .HasForeignKey(p=>p.IdUtilisateur)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
