@@ -15,11 +15,14 @@ namespace BiblioManager.API.Controllers
         private readonly IAuthsService _authService;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IPasswordResetService _passwordResetService;
-        public AuthController(IAuthsService authService, IRefreshTokenService refreshTokenService, IPasswordResetService passwordResetService)
+        private readonly IEmailVerificationService _emailVerificationService;
+
+        public AuthController(IAuthsService authService, IRefreshTokenService refreshTokenService, IPasswordResetService passwordResetService, IEmailVerificationService emailVerificationService)
         {
             _authService = authService;
             _refreshTokenService = refreshTokenService;
             _passwordResetService = passwordResetService;
+            _emailVerificationService = emailVerificationService;
         }
 
         /// <summary>
@@ -95,7 +98,6 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpPost("reset-password")]
-        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             if (!ModelState.IsValid)
@@ -108,6 +110,48 @@ namespace BiblioManager.API.Controllers
             return Ok(new
             {
                 message = "Mot de passe réinitialisé avec succès."
+            });
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(VerifyEmailDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            await _emailVerificationService.VerifyEmailAsync(request.Token);
+            return Ok(new
+            {
+                message = "Email verified successfully."
+            });
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+            await _authService.RegisterAsync(registerDto);
+            return Ok(new
+            {
+                message = "Votre compte a été créé. Veuillez confirmer votre adresse mail pour se connecter."
+            });
+        }
+
+        [HttpPost("resend-verification-email")]
+        public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendVerificationEmail request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            await _emailVerificationService.ResendVerificationEmailAsync(request.Email);
+
+            return Ok(new
+            {
+                message =
+                    "Un nouvel e-mail de vérification " +
+                    "a été envoyé."
             });
         }
     }

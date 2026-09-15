@@ -1,6 +1,7 @@
 ﻿using BiblioManager.API.Dtos.Auth;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
+using Microsoft.Identity.Client;
 
 namespace BiblioManager.API.Services
 {
@@ -10,18 +11,22 @@ namespace BiblioManager.API.Services
         private readonly IJwtService _jwtService;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IEmailVerificationService _emailVerifService;
 
-        public AuthService(IUtilisateurRepository utilisateurRepository, IJwtService jwtService, IRefreshTokenService refreshTokenService, IRefreshTokenRepository refreshTokenRepository)
+        public AuthService(IUtilisateurRepository utilisateurRepository, IJwtService jwtService, IRefreshTokenService refreshTokenService, IRefreshTokenRepository refreshTokenRepository, IEmailVerificationService emailVerifService)
         {
             _utilisateurRepository = utilisateurRepository;
             _jwtService = jwtService;
             _refreshTokenService = refreshTokenService;
             _refreshTokenRepository = refreshTokenRepository;
+            _emailVerifService = emailVerifService;
         }
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var user = await _utilisateurRepository.GetByEmailAsync(request.Email) ??
                        throw new UnauthorizedAccessException("Credentials invalides");
+            if (!user.EmailConfirmed)
+                throw new UnauthorizedAccessException("Veuillez verifier votre adresse mail.");
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.MotDePasse))
                 throw new UnauthorizedAccessException("Credentials invalides");
             if (user.Adherent != null && !user.Adherent.Actif)
@@ -62,12 +67,26 @@ namespace BiblioManager.API.Services
 
             if (storedToken == null)
                 return;
-            if(!storedToken.DateRevocation.HasValue)
+            if (!storedToken.DateRevocation.HasValue)
             {
                 storedToken.DateRevocation = DateTime.UtcNow;
                 await _refreshTokenRepository.SaveChangesAsync();
             }
+        }
 
+        public async Task RegisterAsync(RegisterDto registerDto)
+        {
+            var user = new Utilisateur
+            {
+                Nom = registerDto.Nom,
+                Prenom = registerDto.Prenom,
+                Email = registerDto.Email,
+                MotDePasse = BCrypt.Net.BCrypt.HashPassword(registerDto.MotDePasse),
+                RoleUtilisateur = RoleUtilisateurEnum.Utilisateur,
+                EmailConfirmed = false
+            };
+            await _utilisateurRepository.CreateAsync(user);
+            await _emailVerifService.SendVerificationEmailAsync(user);
         }
     }
 }

@@ -6,5 +6,6 @@ namespace BiblioManager.API.Interfaces
     {
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task LogoutAsync(string refreshToken);
+        Task RegisterAsync(RegisterDto registerDto);
     }
 }

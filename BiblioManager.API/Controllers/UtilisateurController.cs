@@ -51,7 +51,7 @@ namespace BiblioManager.API.Controllers
                 return NotFound();
             return Ok(utilisateur.ToUtilisateurDto());
         }
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin,Employe")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUtilisateurDto createUtilisateurDto)
         {
@@ -113,7 +113,10 @@ namespace BiblioManager.API.Controllers
 
             await _repoSer.ModifierRoleAsync(id, dto.Role);
 
-            return Ok();
+            return StatusCode(StatusCodes.Status201Created, new
+            {
+                message = "Votre compte a été créé. Veuillez confirmer votre adresse e-mail avant de vous connecter."
+            });
         }
     }
 }

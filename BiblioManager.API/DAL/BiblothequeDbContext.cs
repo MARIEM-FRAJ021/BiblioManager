@@ -19,6 +19,7 @@ namespace BiblioManager.API.DAL
         public DbSet<Categorie> Categories { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,7 @@ namespace BiblioManager.API.DAL
             ConfigPaiement(modelBuilder);
             ConfigRefreshTokens(modelBuilder);
             ConfigPasswordResetToken(modelBuilder);
+            ConfigEmailConfirmToken(modelBuilder);
         }
 
 
@@ -56,7 +58,7 @@ namespace BiblioManager.API.DAL
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
-        public void ConfigLivre(ModelBuilder modelBuilder)
+        private void ConfigLivre(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Livre>()
                 .HasMany(l => l.Emprunts)
@@ -126,13 +128,22 @@ namespace BiblioManager.API.DAL
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
-        private void ConfigPasswordResetToken (ModelBuilder modelBuilder)
+        private void ConfigPasswordResetToken(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PasswordResetToken>()
-                .HasOne(p=> p.Utilisateur)
-                .WithMany(u=>u.PasswordResetTokens)
-                .HasForeignKey(p=>p.IdUtilisateur)
+                .HasOne(p => p.Utilisateur)
+                .WithMany(u => u.PasswordResetTokens)
+                .HasForeignKey(p => p.IdUtilisateur)
                 .OnDelete(DeleteBehavior.Cascade);
+        }
+
+        private void ConfigEmailConfirmToken(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<EmailVerificationToken>()
+            .HasOne(e => e.Utilisateur)
+            .WithMany(u => u.EmailVerificationTokens)
+            .HasForeignKey(e => e.IdUtilisateur)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

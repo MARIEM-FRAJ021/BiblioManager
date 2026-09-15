@@ -13,6 +13,7 @@ namespace BiblioManager.API.Models
         public string MotDePasse { get; set; } = string.Empty;
         public RoleUtilisateurEnum RoleUtilisateur { get; set; }
         public DateTime DateCreation { get; set; } = DateTime.UtcNow;
+        public bool EmailConfirmed { get; set; } = false;
         public Adherent? Adherent { get; set; }
         /// <summary>
         /// Relation avec Paiements
@@ -20,6 +21,8 @@ namespace BiblioManager.API.Models
         public ICollection<Paiement> Paiements { get; set; } = new List<Paiement>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+
+        public ICollection<EmailVerificationToken> EmailVerificationTokens { get; set; } = new List<EmailVerificationToken>();
     }
 
     public enum RoleUtilisateurEnum
