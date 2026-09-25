@@ -34,8 +34,6 @@ namespace BiblioManager.API.Repository
                 throw new InvalidOperationException("Cet email existe déjà.");
             if (user.RoleUtilisateur is RoleUtilisateurEnum.Admin)
                 throw new InvalidOperationException("Interdit");
-            if (user.RoleUtilisateur is RoleUtilisateurEnum.Adherent)
-                throw new InvalidOperationException("Interdit");
             await users.AddAsync(user);
             await _context.SaveChangesAsync();
             return user;
@@ -64,7 +62,7 @@ namespace BiblioManager.API.Repository
 
             if (utilisateurModel != null)
             {
-                if (utilisateurModel.RoleUtilisateur == RoleUtilisateurEnum.Admin || utilisateurModel.RoleUtilisateur == RoleUtilisateurEnum.Adherent)
+                if (utilisateurModel.RoleUtilisateur == RoleUtilisateurEnum.Admin)
                     throw new InvalidOperationException(" Interdit de supprimer un adhérent / admin");
                 _context.Utilisateurs.Remove(utilisateurModel);
                 await _context.SaveChangesAsync();

@@ -2,6 +2,6 @@
 {
     public static class Constantes
     {
-        public const decimal PrixAnnuel = 50m;
+        public const decimal PrixAnnuel = 5m;
     }
 }

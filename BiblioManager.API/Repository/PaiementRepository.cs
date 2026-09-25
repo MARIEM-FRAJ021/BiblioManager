@@ -34,6 +34,7 @@ namespace BiblioManager.API.Repository
         {
             return await _context.Paiements
                 .Include(p => p.Utilisateur)
+                .ThenInclude(u=>u!.Adherent)
                 .FirstOrDefaultAsync(p => p.StripeSessionId == stripeSessionId);
         }
 

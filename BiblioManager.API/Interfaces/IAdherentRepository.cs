@@ -5,6 +5,7 @@ namespace BiblioManager.API.Interfaces
     public interface IAdherentRepository
     {
         Task<Adherent?> GetAdherentById(int idAdherent);
+        Task<Adherent?> GetAdherentByIdUtilisateur(int idUtilisateur);
         Task<IEnumerable<Adherent>> GetAdherents();
         Task<bool> UserIsAdherent(int idUtilisateur);
         Task<IEnumerable<Adherent>> GetAdherentActifs();

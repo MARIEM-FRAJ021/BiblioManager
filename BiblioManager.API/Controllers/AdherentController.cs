@@ -21,22 +21,6 @@ namespace BiblioManager.API.Controllers
             _repo = repo;
             _service = service;
         }
-        [HttpPost("{id}/devenir-adherent")]
-        [Authorize(Roles = "Admin,Employe,Utilisateur")]
-        public async Task<IActionResult> DevenirAdherent(int id)
-        {
-            if (User.IsInRole("Utilisateur"))
-            {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-                if (userId != id)
-                {
-                    return Forbid();
-                }
-            }
-            await _service.DevenirAdherent(id);
-            return Ok("Utilisateur est maintenant Adhérent");
-
-        }
         [HttpGet("{idAdherent:int}")]
         [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetAdherentById(int idAdherent)
@@ -74,7 +58,7 @@ namespace BiblioManager.API.Controllers
         public async Task<IActionResult> GetAdherentsActifs()
         {
             var adherents = await _repo.GetAdherentActifs();
-            return Ok(adherents?.Select(x=>x.ToAdherentDto()).ToList());
+            return Ok(adherents?.Select(x => x.ToAdherentDto()).ToList());
         }
         [HttpGet("{idAdherent}/verifier")]
         [Authorize(Roles = "Admin,Employe")]
@@ -105,29 +89,6 @@ namespace BiblioManager.API.Controllers
         {
             var existe = await _repo.UserIsAdherent(userId);
             return Ok(existe);
-        }
-        [HttpPut("renouveler/{idAdherent}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
-        public async Task<IActionResult> RenouvelerAbonnement(int idAdherent)
-        {
-            if (User.IsInRole("Adherent"))
-            {
-                var idAdherentClaim = User.FindFirst("IdAdherent");
-
-                if (idAdherentClaim == null)
-                    return Unauthorized();
-
-                if (!int.TryParse(idAdherentClaim.Value, out var idAd))
-                    return Unauthorized();
-
-                if (idAdherent != idAd)
-                    return Forbid();
-            }
-            await _service.RenouvelerAbonnement(idAdherent);
-            return Ok(new
-            {
-                Message = "Abonnement renouvelé avec succès."
-            });
         }
     }
 }

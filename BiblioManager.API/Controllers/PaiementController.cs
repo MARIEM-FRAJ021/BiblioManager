@@ -1,24 +1,29 @@
 ﻿using BiblioManager.API.Dtos.Paiement;
 using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
+using BiblioManager.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
+using Stripe.Checkout;
 using System.Security.Claims;
 
 namespace BiblioManager.API.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PaiementController : ControllerBase
     {
         private readonly IPaimentRepository _paiementRepository;
         private readonly IPaiementService _paiementService;
+        private readonly IConfiguration _configuration;
 
-        public PaiementController(IPaimentRepository paiementRepository, IPaiementService paiementService)
+
+        public PaiementController(IPaimentRepository paiementRepository, IPaiementService paiementService, IConfiguration configuration)
         {
             _paiementRepository = paiementRepository;
             _paiementService = paiementService;
+            _configuration = configuration;
         }
         [HttpGet]
         [Authorize(Roles = "Admin,Employe,Adherent")]
@@ -52,35 +57,48 @@ namespace BiblioManager.API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> InitierPaiementCarte([FromBody] CreatePaiementDto createPaiementDto)
         {
-            if (User.IsInRole("Utilisateur") || User.IsInRole("Adherent"))
-            {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-                if (userIdClaim == null)
-                    return Unauthorized();
+            if (userIdClaim == null)
+                return Unauthorized();
 
-                if (!int.TryParse(userIdClaim.Value, out var userId))
-                    return Unauthorized();
+            if (!int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized();
 
-                if (createPaiementDto.IdUtilisateur != userId)
-                    return Forbid();
-            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var paiement = await _paiementService.InitierPaiementCarte(createPaiementDto.ToPaiementFromCreatePaiementDto());
-            return CreatedAtAction(nameof(GetById), new { id = paiement.IdPaiement }, paiement);
+
+            var stripeUrl = await _paiementService.InitierPaiementCarte(createPaiementDto.Type, userId);
+
+            return Ok(stripeUrl);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> TraiterPaiementCarte([FromBody] StripeWebhookDto stripeWebhookDto)
+        [HttpPost("traiter-paiement")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> TraiterPaiementCarte()
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            bool paiementReussi = stripeWebhookDto.Status.Equals("paid");
-            await _paiementService.TraiterPaiementCarte(
-                stripeWebhookDto.StripeSessionId, paiementReussi);
+            Request.EnableBuffering(); 
+            var json = await new StreamReader(HttpContext.Request.Body, leaveOpen: true).ReadToEndAsync();
+            Request.Body.Position = 0;
+
+            var signature = Request.Headers["Stripe-Signature"].FirstOrDefault();
+            if (string.IsNullOrEmpty(signature) || string.IsNullOrEmpty(json))
+                return BadRequest();
+
+            var webhookSecret = _configuration["Stripe:webhookSecret"];
+            if (string.IsNullOrEmpty(webhookSecret))
+                return StatusCode(StatusCodes.Status500InternalServerError, "Stripe webhook Secret non configuré");
+
+            Event stripeEvent = EventUtility.ConstructEvent(json, signature, webhookSecret);
+            if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted
+                && stripeEvent.Data.Object is Session session)
+            {
+                await _paiementService.TraiterPaiementCarte(session);
+            }
+            
             return Ok();
         }
     }

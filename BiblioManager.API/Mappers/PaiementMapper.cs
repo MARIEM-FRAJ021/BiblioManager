@@ -20,15 +20,5 @@ namespace BiblioManager.API.Mappers
                 Statut =paiement.Statut
             };
         }
-
-        public static Paiement ToPaiementFromCreatePaiementDto(this CreatePaiementDto createPaiementDto)
-        {
-            return new Paiement
-            {
-                IdUtilisateur = createPaiementDto.IdUtilisateur,
-                StripeSessionId = createPaiementDto.StripeSessionId,
-                Type = createPaiementDto.Type
-            };
-        }
     }
 }

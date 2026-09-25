@@ -29,7 +29,6 @@ namespace BiblioManager.API.Models
     {
         Admin,
         Employe,
-        Utilisateur,
-        Adherent
+        Utilisateur
     }
 }

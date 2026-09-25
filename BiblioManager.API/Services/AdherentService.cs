@@ -17,43 +17,22 @@ namespace BiblioManager.API.Services
             _paiementRepository = paiementRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task DevenirAdherent(int utilisateurId)
+        public async Task DevenirAdherent(Paiement paiement)
         {
             await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var utilisateur = await _utilisateurRepository.GetByIdAsync(utilisateurId);
+                var utilisateur = paiement.Utilisateur;
 
                 if (utilisateur == null)
                     throw new KeyNotFoundException("Utilisateur introuvable.");
 
-                var estAdherent =
-                    await _adherentRepository.UserIsAdherent(utilisateurId);
-
-                var paiementValide =
-                    await _paiementRepository.GetDernierPaiementValide(utilisateurId);
-
-                var data = new
-                {
-                    Utilisateur = utilisateur,
-                    EstAdherent = estAdherent,
-                    PaiementValide = paiementValide
-                };
-                if (data == null)
-                    throw new KeyNotFoundException("Utilisateur introuvable");
-                if (data.EstAdherent)
-                    throw new InvalidOperationException("Utilisateur est déjà adhérent");
-                if (data.PaiementValide == null)
-                    throw new InvalidOperationException("paiement requis");
-
-                data.Utilisateur.RoleUtilisateur = RoleUtilisateurEnum.Adherent;
-
                 var adherent = new Adherent
                 {
-                    IdUtilisateur = utilisateurId,
-                    Nom = data.Utilisateur.Nom,
-                    Prenom = data.Utilisateur.Prenom,
-                    Email = data.Utilisateur.Email,
+                    IdUtilisateur = utilisateur.IdUtilisateur,
+                    Nom = utilisateur.Nom,
+                    Prenom = utilisateur.Prenom,
+                    Email = utilisateur.Email,
                     Actif = true,
                     DateDebut = DateTime.UtcNow,
                     DateFin = DateTime.UtcNow.AddYears(1),
@@ -62,7 +41,7 @@ namespace BiblioManager.API.Services
 
                 await _adherentRepository.AddAsync(adherent);
 
-                data.PaiementValide.Statut = PaiementStatutEnum.Consomme;
+                paiement.Statut = PaiementStatutEnum.Consomme;
 
                 await _adherentRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -87,7 +66,7 @@ namespace BiblioManager.API.Services
 
                 case StatutAdherentEnum.Desactive:
                     throw new InvalidOperationException("Adhésion désactivée.");
-                
+
                 case StatutAdherentEnum.PenaliteNonReglee:
                     throw new InvalidOperationException("Pénalité non règlée.");
 
@@ -97,18 +76,14 @@ namespace BiblioManager.API.Services
                     throw new InvalidOperationException("Statut inconnu.");
             }
         }
-        public async Task RenouvelerAbonnement(int idAdherent)
+        public async Task RenouvelerAbonnement(Paiement paiement)
         {
             await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var adherent = await _adherentRepository.GetAdherentById(idAdherent)
-                              ?? throw new KeyNotFoundException();
-                bool adherentIsActive = adherent.Actif;
-                if (adherentIsActive)
-                    throw new InvalidOperationException("L'adhésion est déjà active.");
-                var paiement = await _paiementRepository.GetDernierPaiementValide(adherent.IdUtilisateur)
-                ?? throw new InvalidOperationException("Aucun paiement pour cet adhérent.");
+                var adherent = paiement.Utilisateur!.Adherent;
+                if (adherent == null)
+                    throw new KeyNotFoundException("Aucun adhérent associé.");
                 adherent.DateDebut = DateTime.UtcNow;
                 adherent.DateFin = DateTime.UtcNow.AddYears(1);
                 adherent.Actif = true;

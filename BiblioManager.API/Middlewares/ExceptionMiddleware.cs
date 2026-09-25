@@ -1,4 +1,6 @@
-﻿namespace BiblioManager.API.Middlewares
+﻿using Stripe;
+
+namespace BiblioManager.API.Middlewares
 {
     public class ExceptionMiddleware
     {
@@ -37,6 +39,11 @@
                     context.Response.StatusCode = 401;
                     await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
 
+                }
+                else if (ex is StripeException)
+                {
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync($"{{\"error\": \"{ex.Message}\"}}");
                 }
                 else
                 {

@@ -29,8 +29,7 @@ namespace BiblioManager.API.Services
                 throw new UnauthorizedAccessException("Veuillez verifier votre adresse mail.");
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.MotDePasse))
                 throw new UnauthorizedAccessException("Credentials invalides");
-            if (user.Adherent != null && !user.Adherent.Actif)
-                throw new InvalidOperationException("Votre compte est désactivé.");
+           
             var accessToken = _jwtService.GenerateToken(user);
             var refreshToken = _refreshTokenService.GenerateRefreshToken();
 

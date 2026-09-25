@@ -18,7 +18,11 @@ namespace BiblioManager.API.Repository
         {
             return await _context.Adherents.FirstOrDefaultAsync(x => x.IdAdherent == idAdherent);
         }
+        public async Task<Adherent?> GetAdherentByIdUtilisateur(int idUtilisateur)
+        {
+            return await _context.Adherents.FirstOrDefaultAsync(x => x.IdUtilisateur == idUtilisateur);
 
+        }
         public async Task<IEnumerable<Adherent>> GetAdherents()
         {
             return await _context.Adherents.ToListAsync();
