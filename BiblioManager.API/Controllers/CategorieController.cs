@@ -12,25 +12,54 @@ namespace BiblioManager.API.Controllers
     public class CategorieController : ControllerBase
     {
         private readonly ICategorieRepository _repo;
+        private readonly IAdherentRepository _repoAdherent;
 
-        public CategorieController(ICategorieRepository repo)
+        public CategorieController(ICategorieRepository repo, IAdherentRepository repoAdherent)
         {
             _repo = repo;
+            _repoAdherent = repoAdherent;
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetAll()
         {
+            if (User.IsInRole("Utilisateur"))
+            {
+                var adherentIdClaim = User.FindFirst("IdAdherent");
+
+                if (adherentIdClaim == null)
+                    return Forbid();
+
+                if (!int.TryParse(adherentIdClaim.Value, out var adherentId))
+                    return Unauthorized();
+                
+                var adherent = await _repoAdherent.GetAdherentById(adherentId);
+
+                if (!adherent!.Actif)
+                    return Forbid();
+            }
             var categs = await _repo.GetAllAsync();
             var categdtos = categs.Select(c => c.ToCategorieDto()).ToList();
             return Ok(categdtos);
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetById(int id)
         {
+            if (User.IsInRole("Utilisateur"))
+            {
+                var adherentIdClaim = User.FindFirst("IdAdherent");
+
+                if (adherentIdClaim == null)
+                    return Forbid();
+
+                if (!int.TryParse(adherentIdClaim.Value, out var adherentId))
+                    return Unauthorized();
+                var adherent = await _repoAdherent.GetAdherentById(adherentId);
+
+                if (!adherent!.Actif)
+                    return Forbid();
+            }
             var categ = await _repo.GetByIdAsync(id);
             if (categ == null)
                 return NotFound();

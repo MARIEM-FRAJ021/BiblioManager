@@ -69,6 +69,7 @@ namespace BiblioManager.API.Services
                 RefreshToken = newRefreshToken,
                 AccessTokenExpiration = DateTime.UtcNow.AddMinutes(30),
                 RefreshTokenExpiration = newRefreshTokenEntity.DateExpiration,
+                UserId = user.IdUtilisateur,
                 Nom = user.Nom,
                 Prenom = user.Prenom,
                 Email = user.Email,

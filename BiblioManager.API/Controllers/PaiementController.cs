@@ -25,23 +25,35 @@ namespace BiblioManager.API.Controllers
             _paiementService = paiementService;
             _configuration = configuration;
         }
-        [HttpGet]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMesPaiements()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            if (!int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized();
+
+            var paiements = await _paiementRepository
+                .GetPaiementsUtilisateur(userId);
+
+            if (paiements == null || !paiements.Any())
+                return NotFound("Aucun paiement trouvé.");
+
+            return Ok(
+                paiements
+                    .Select(x => x.ToPaiementDto())
+                    .ToList()
+            );
+        }
+        [HttpGet("PaiementsUtilisateur/{idUtilisateur}")]
+        [Authorize(Roles ="Admin,Employe")]
         public async Task<IActionResult> GetPaiementsUtilisateur(int idUtilisateur)
         {
-            if (User.IsInRole("Adherent"))
-            {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
-                {
-                    return Unauthorized();
-                }
-                var userId = int.Parse(userIdClaim.Value);
-                if (idUtilisateur != userId)
-                {
-                    return Forbid();
-                }
-            }
             var ListPaiements = await _paiementRepository.GetPaiementsUtilisateur(idUtilisateur);
             if (ListPaiements == null || !ListPaiements.Any())
                 return NotFound("Aucun paiement trouvé");

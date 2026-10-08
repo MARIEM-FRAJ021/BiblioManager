@@ -12,50 +12,55 @@ namespace BiblioManager.API.Controllers
     {
         private readonly IEmpruntService _empruntService;
         private readonly IEmpruntRepository _empruntRepository;
+        private readonly IAdherentRepository _repoAdherent;
 
-        public EmpruntController(IEmpruntService empruntService, IEmpruntRepository empruntRepository)
+        public EmpruntController(IEmpruntService empruntService, IEmpruntRepository empruntRepository, IAdherentRepository repoAdherent)
         {
             _empruntService = empruntService;
             _empruntRepository = empruntRepository;
+            _repoAdherent = repoAdherent;
         }
 
-        [HttpPost("{idAdherent}/{idLivre}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
-        public async Task<IActionResult> EmprunterLivre(int idAdherent, int idLivre)
+        [HttpPost("{idLivre}")]
+        [Authorize]
+        public async Task<IActionResult> EmprunterLivre(int idLivre)
         {
-            if (User.IsInRole("Adherent"))
-            {
-                var idAdherentClaim = User.FindFirst("IdAdherent");
-                if (idAdherentClaim == null)
-                    return Unauthorized();
-                if (!int.TryParse(idAdherentClaim.Value, out var idAd))
-                    return Unauthorized();
-                if (idAdherent != idAd)
-                    return Forbid();
-            }
+            var idAdherentClaim = User.FindFirst("IdAdherent");
+
+            if (idAdherentClaim == null)
+                return Forbid();
+
+            if (!int.TryParse(idAdherentClaim.Value, out var idAdherent))
+                return Unauthorized();
+
+            var adherent = await _repoAdherent.GetAdherentById(idAdherent);
+
+            if (!adherent!.Actif)
+                return Forbid();
+
             await _empruntService.EmprunterLivre(idAdherent, idLivre);
             return Ok(new
             {
                 Message = "Livre emprunté avec succès."
             });
         }
-        [HttpPut("{idAdherent}/{idEmprunt}/retour")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
-        public async Task<IActionResult> RetournerLivre(int idAdherent, int idEmprunt)
+
+        [HttpPut("{idEmprunt}/retour")]
+        [Authorize]
+        public async Task<IActionResult> RetournerLivre(int idEmprunt)
         {
-            if (User.IsInRole("Adherent"))
-            {
-                var idAdherentClaim = User.FindFirst("IdAdherent");
+            var idAdherentClaim = User.FindFirst("IdAdherent");
 
-                if (idAdherentClaim == null)
-                    return Unauthorized();
+            if (idAdherentClaim == null)
+                return Forbid();
 
-                if (!int.TryParse(idAdherentClaim.Value, out var idAd))
-                    return Unauthorized();
+            if (!int.TryParse(idAdherentClaim.Value, out var idAdherent))
+                return Unauthorized();
 
-                if (idAdherent != idAd)
-                    return Forbid();
-            }
+            var adherent = await _repoAdherent.GetAdherentById(idAdherent);
+
+            if (!adherent!.Actif)
+                return Forbid();
 
             await _empruntService.RetournerLivre(idAdherent, idEmprunt);
             return Ok(new
@@ -64,24 +69,31 @@ namespace BiblioManager.API.Controllers
             });
         }
 
+        [HttpGet("me/historique")]
+        [Authorize]
+        public async Task<IActionResult> GetMonHistorique()
+        {
+            var idAdherentClaim = User.FindFirst("IdAdherent");
+
+            if (idAdherentClaim == null)
+                return Forbid();
+
+            if (!int.TryParse(idAdherentClaim.Value, out var idAdherent))
+                return Unauthorized();
+            
+            var adherent = await _repoAdherent.GetAdherentById(idAdherent);
+
+            if (!adherent!.Actif)
+                return Forbid();
+
+            var emprunts = await _empruntRepository.GetHistoriqueByAdherent(idAdherent);
+            return Ok(emprunts.Select(x => x.ToEmpruntDto()).ToList());
+        }
+
         [HttpGet("historique/{idAdherent}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> GetHistorique(int idAdherent)
         {
-
-            if (User.IsInRole("Adherent"))
-            {
-                var idAdherentClaim = User.FindFirst("IdAdherent");
-
-                if (idAdherentClaim == null)
-                    return Unauthorized();
-
-                if (!int.TryParse(idAdherentClaim.Value, out var idAd))
-                    return Unauthorized();
-
-                if (idAdherent != idAd)
-                    return Forbid();
-            }
             var emprunts = await _empruntRepository.GetHistoriqueByAdherent(idAdherent);
             return Ok(emprunts.Select(x => x.ToEmpruntDto()).ToList());
         }

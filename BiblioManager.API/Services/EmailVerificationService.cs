@@ -1,7 +1,9 @@
 ﻿using BiblioManager.API.Interfaces;
 using BiblioManager.API.Models;
 using Microsoft.AspNetCore.WebUtilities;
+using Stripe;
 using System.Net.Http.Headers;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -82,7 +84,8 @@ namespace BiblioManager.API.Services
         {
             var utilisateur = await _utilisateurRepository.GetByEmailAsync(email);
             if (utilisateur == null)
-                throw new KeyNotFoundException("Utilisateur introuvable");
+                throw new KeyNotFoundException("Si un compte associé à cette adresse existe, " +
+            "un email de réinitialisation a été envoyé.");
             if (utilisateur.EmailConfirmed)
                 throw new KeyNotFoundException("Cette adresse e-mail est déjà vérifiée.");
 

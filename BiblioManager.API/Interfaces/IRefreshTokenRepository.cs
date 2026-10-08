@@ -6,6 +6,7 @@ namespace BiblioManager.API.Interfaces
     {
         Task<RefreshToken?> GetByHashAsync(string tokenHash);
         Task AddAsync(RefreshToken refreshToken);
+        Task RevokeAllForUserAsync(int userId);
         Task SaveChangesAsync();
     }
 }

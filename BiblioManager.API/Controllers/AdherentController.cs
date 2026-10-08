@@ -1,10 +1,7 @@
-﻿using BiblioManager.API.Dtos;
-using BiblioManager.API.Interfaces;
+﻿using BiblioManager.API.Interfaces;
 using BiblioManager.API.Mappers;
-using BiblioManager.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BiblioManager.API.Controllers
 {
@@ -21,28 +18,34 @@ namespace BiblioManager.API.Controllers
             _repo = repo;
             _service = service;
         }
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyAdherent()
+        {
+            var idAdherentClaim = User.FindFirst("IdAdherent");
+
+            if (idAdherentClaim == null)
+                return Forbid();
+
+            if (!int.TryParse(idAdherentClaim.Value, out var idAdherent))
+                return Unauthorized();
+
+            var adherent = await _repo.GetAdherentById(idAdherent);
+
+            if (adherent == null)
+                return NotFound();
+            if (adherent.Actif == false)
+                return Forbid();
+            return Ok(adherent.ToAdherentDto());
+        }
         [HttpGet("{idAdherent:int}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> GetAdherentById(int idAdherent)
         {
-            if (User.IsInRole("Adherent"))
-            {
-                var idAdherentClaim = User.FindFirst("IdAdherent");
-
-                if (idAdherentClaim == null)
-                    return Unauthorized();
-
-                if (!int.TryParse(idAdherentClaim.Value, out var idAd))
-                    return Unauthorized();
-
-                if (idAdherent != idAd)
-                    return Forbid();
-            }
             var adherent = await _repo.GetAdherentById(idAdherent);
+
             if (adherent == null)
-            {
                 return NotFound();
-            }
+
             return Ok(adherent.ToAdherentDto());
         }
 
@@ -75,8 +78,8 @@ namespace BiblioManager.API.Controllers
         [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> DesactiverAdhesion(int id)
         {
-            var IsActif = await _service.DesactiverAdhesion(id);
-            if (IsActif)
+            var IsInactive = await _service.DesactiverAdhesion(id);
+            if (!IsInactive)
                 return Conflict("L'adhésion est déjà active.");
             return Ok(new
             {

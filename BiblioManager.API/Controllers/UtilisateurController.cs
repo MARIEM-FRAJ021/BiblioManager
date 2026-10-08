@@ -32,20 +32,26 @@ namespace BiblioManager.API.Controllers
             return Ok(utilisateurdtos);
         }
 
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyUser()
+        {
+            var idUserClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idUserClaim == null)
+                return Forbid();
+
+            if (!int.TryParse(idUserClaim.Value, out var idUser))
+                return Unauthorized();
+
+            var utilisateur = await _repo.GetByIdAsync(idUser);
+            if (utilisateur == null)
+                return NotFound();
+            return Ok(utilisateur.ToUtilisateurDto());
+        }
+
         [HttpGet("{id:int}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Employe")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (User.IsInRole("Utilisateur") || User.IsInRole("Adherent"))
-            {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
-                    return Unauthorized();
-                if (!int.TryParse(userIdClaim.Value, out var userId))
-                    return Unauthorized();
-                if (userId != id)
-                    return Forbid();
-            }
             var utilisateur = await _repo.GetByIdAsync(id);
             if (utilisateur == null)
                 return NotFound();
@@ -68,22 +74,33 @@ namespace BiblioManager.API.Controllers
             var utilisateur = await _repo.CreateAsync(utilisateurModel);
             return CreatedAtAction(nameof(GetById), new { id = utilisateur.IdUtilisateur }, utilisateur.ToUtilisateurDto());
         }
-        [Authorize]
+        [Authorize(Roles = "Admin,Employe")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUtilisateurDto updateUtilisateurDto)
         {
-            if (User.IsInRole("Utilisateur") || User.IsInRole("Adherent"))
-            {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (!int.TryParse(userIdClaim!.Value, out var userId))
-                    return Unauthorized();
-                if (userId != id)
-                    return Forbid();
-            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var userModel = updateUtilisateurDto.ToUtilisateurFromUpdateUtilisateurDto();
             var user = await _repo.UpdateAsync(id, userModel);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user.ToUtilisateurDto());
+        }
+        [HttpPut("me")]
+        public async Task<IActionResult> Update([FromBody] UpdateUtilisateurDto updateUtilisateurDto)
+        {
+            var idUserClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idUserClaim == null)
+                return Forbid();
+
+            if (!int.TryParse(idUserClaim.Value, out var idUser))
+                return Unauthorized();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var userModel = updateUtilisateurDto.ToUtilisateurFromUpdateUtilisateurDto();
+            var user = await _repo.UpdateAsync(idUser, userModel);
             if (user == null)
             {
                 return NotFound();
@@ -115,7 +132,7 @@ namespace BiblioManager.API.Controllers
 
             return StatusCode(StatusCodes.Status201Created, new
             {
-                message = "Votre compte a été créé. Veuillez confirmer votre adresse e-mail avant de vous connecter."
+                message = "Rôle utilisateur modifié avec succès."
             });
         }
     }

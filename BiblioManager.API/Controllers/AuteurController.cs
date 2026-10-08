@@ -12,25 +12,55 @@ namespace BiblioManager.API.Controllers
     public class AuteurController : ControllerBase
     {
         private readonly IAuteurRepository _repo;
+        private readonly IAdherentRepository _repoAdherent;
 
-        public AuteurController(IAuteurRepository repo)
+        public AuteurController(IAuteurRepository repo, IAdherentRepository repoAdherent)
         {
             _repo = repo;
+            _repoAdherent = repoAdherent;
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetAll()
         {
+            if (User.IsInRole("Utilisateur"))
+            {
+                var adherentIdClaim = User.FindFirst("IdAdherent");
+
+                if (adherentIdClaim == null)
+                    return Forbid();
+
+                if (!int.TryParse(adherentIdClaim.Value, out var adherentId))
+                    return Unauthorized();
+
+                var adherent = await _repoAdherent.GetAdherentById(adherentId);
+
+                if (!adherent!.Actif)
+                    return Forbid();
+
+            }
             var auteurs = await _repo.GetAllAsync();
             var auteurdtos = auteurs.Select(c => c.ToAuteurDto()).ToList();
             return Ok(auteurdtos);
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin,Employe,Adherent")]
         public async Task<IActionResult> GetById(int id)
         {
+            if (User.IsInRole("Utilisateur"))
+            {
+                var adherentIdClaim = User.FindFirst("IdAdherent");
+
+                if (adherentIdClaim == null)
+                    return Forbid();
+
+                if (!int.TryParse(adherentIdClaim.Value, out var adherentId))
+                    return Unauthorized();
+                var adherent = await _repoAdherent.GetAdherentById(adherentId);
+
+                if (!adherent!.Actif)
+                    return Forbid();
+            }
             var auteur = await _repo.GetByIdAsync(id);
             if (auteur == null)
                 return NotFound();

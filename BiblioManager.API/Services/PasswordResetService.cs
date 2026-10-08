@@ -10,13 +10,15 @@ namespace BiblioManager.API.Services
     {
         private readonly IUtilisateurRepository _utiliateurRepository;
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IEmailService _emailService;
 
-        public PasswordResetService(IUtilisateurRepository utilisateurRepository, IPasswordResetTokenRepository passwordResetTokenRepository, IEmailService emailService)
+        public PasswordResetService(IUtilisateurRepository utilisateurRepository, IPasswordResetTokenRepository passwordResetTokenRepository, IEmailService emailService, IRefreshTokenRepository refreshTokenRepository)
         {
             _utiliateurRepository = utilisateurRepository;
             _passwordResetTokenRepository = passwordResetTokenRepository;
             _emailService = emailService;
+            _refreshTokenRepository = refreshTokenRepository;
         }
         public async Task RequestPasswordResetAsync(string email)
         {
@@ -54,9 +56,11 @@ namespace BiblioManager.API.Services
             var user = resetToken.Utilisateur;
             if (user == null)
                 throw new UnauthorizedAccessException("utilisateur introuvable");
+
             user.MotDePasse = BCrypt.Net.BCrypt.HashPassword(newPassword);
             resetToken.DateUtilisation = DateTime.UtcNow;
-
+            
+            await _refreshTokenRepository.RevokeAllForUserAsync(user.IdUtilisateur);
             await _passwordResetTokenRepository.SaveChangesAsync();
         }
 

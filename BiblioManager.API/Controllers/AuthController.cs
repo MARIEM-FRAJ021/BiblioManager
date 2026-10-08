@@ -35,6 +35,8 @@ namespace BiblioManager.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var response = await _authService.LoginAsync(request);
             Response.Cookies.Append(
                 "refreshToken",
