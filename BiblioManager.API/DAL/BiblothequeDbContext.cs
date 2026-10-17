@@ -125,7 +125,7 @@ namespace BiblioManager.API.DAL
                 .HasOne(r => r.Utilisateur)
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(e => e.IdUtilisateur)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         private void ConfigPasswordResetToken(ModelBuilder modelBuilder)

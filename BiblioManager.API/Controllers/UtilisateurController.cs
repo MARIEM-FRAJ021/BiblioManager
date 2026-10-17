@@ -123,11 +123,22 @@ namespace BiblioManager.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ModifierRole(int id, [FromBody] UpdateRoleUtilisateurDto dto)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null ||
+                !int.TryParse(userIdClaim.Value, out var currentUserId))
+            {
+                return Unauthorized();
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             if (dto.Role == RoleUtilisateurEnum.Admin)
                 return Forbid();
 
+            if (currentUserId == id)
+            {
+                return Forbid();
+            }
             await _repoSer.ModifierRoleAsync(id, dto.Role);
 
             return StatusCode(StatusCodes.Status201Created, new
