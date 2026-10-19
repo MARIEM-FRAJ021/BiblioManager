@@ -10,10 +10,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\bugs.md = Docs\bugs.md
-		test-cases-authorization.md = test-cases-authorization.md
-		test-cases-user.md = test-cases-user.md
-		Docs\test-strategy.md = Docs\test-strategy.md
 		Docs\test-cases-authentication.md = Docs\test-cases-authentication.md
+		Docs\test-cases-authorization.md = Docs\test-cases-authorization.md
+		Docs\test-cases-user.md = Docs\test-cases-user.md
+		Docs\test-strategy.md = Docs\test-strategy.md
 	EndProjectSection
 EndProject
 Global
